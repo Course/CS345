@@ -35,8 +35,6 @@ Let :
 
 \subsection*{Claim:} \[F_j = Cq_j[r_{j-2} - s_{n-j-1}]\]
 
-Given : \[F_j = Cq_j[\sum_{i<j} \frac{q_{i}}{(j-i)^2} - \sum_{i>j} \frac{q_{i}}{(j-i)^2}  ]\]
-
 \subsection*{Proof:}
 \begin{align*}
 r_{j-2} & = \sum_{l+m=j-2} x_lz_m \\
@@ -49,6 +47,9 @@ s_{n-j-1} & = \sum_{l+m=n-j-1} y_lz_m \\
 &= \sum_{i>j} \frac{q_i}{(j-i)^2} \\ 
 \end{align*}
 
+Hence , 
+\[F_j = Cq_j[\sum_{i<j} \frac{q_{i}}{(j-i)^2} - \sum_{i>j} \frac{q_{i}}{(j-i)^2}  ]\] 
+\\
 Note: We assume $r_j = 0$ for $j < 0$ and same in the case of $s_j$.
 
 \subsection*{Runtime analysis:}
