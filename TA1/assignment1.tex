@@ -1,16 +1,60 @@
-\documentclass{article} \usepackage{graphicx} \usepackage{wrapfig}
-\usepackage{multicol} \usepackage{epsfig} \textwidth 6in
-\addtolength{\oddsidemargin}{-0.5in} \textheight 9in
-\addtolength{\topmargin}{-0.5in} \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5cm} \setlength{\columnsep}{5cm} \topskip 0.0in
-% \pagestyle{empty}
-\thispagestyle{empty} \title{Assignment 1} \author{Satvik Chauhan
-  (Y9521),Pankaj More (Y9402)}
-% \date{August 04, 2004}
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{multicol}
+\usepackage{epsfig}
+\usepackage{amsmath}
+\textwidth 6in
+\addtolength{\oddsidemargin}{-0.5in}
+\textheight 9in
+\addtolength{\topmargin}{-0.5in}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5cm}
+\setlength{\columnsep}{5cm}
+\topskip 0.0in
+%\pagestyle{empty}
+\thispagestyle{empty}
+\title{Assignment 1}
+\author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
+%\date{August 04, 2004}
 \date{}
 
 
 \begin{document}
 \maketitle
+\section{Question 4}
+Let : 
+\[r = x * z \] is the convolution of 2 vectors x and z and \\
+\[s = y * z \] is the convolution of 2 vectors y and z such that
+\[x = (x_{0},x_{1},...,x_{n-1})\]
+\[y = (y_{0},y_{1},...,y_{n-1})\]
+\[z = (y_{0},z_{1},...,z_{n-1})\]
+\[x_{i} = q_{i+1}\]
+\[y_{i} = q_{n-i}\]
+\[z_{j} = 1/(j+1)^2\]
+
+\subsection*{Claim:} \[F_j = Cq_j[r_{j-2} - s_{n-j-1}]\]
+
+Given : \[F_j = Cq_j[\sum_{i<j} \frac{q_{i}}{(j-i)^2} - \sum_{i>j} \frac{q_{i}}{(j-i)^2}  ]\]
+
+\subsection*{Proof:}
+\begin{align*}
+r_{j-2} & = \sum_{l+m=j-2} x_lz_m \\
+&= \sum_{l+m=j-2} \frac{q_{l+1}}{(m+1)^2} \\
+&= \frac{q_1}{(j-1)^2} + \frac{q_2}{(j-2)^2} + ... + \frac{q_{j-1}}{1^2} \\
+&= \sum_{i<j} \frac{q_i}{(j-i)^2} \\
+s_{n-j-1} & = \sum_{l+m=n-j-1} y_lz_m \\
+&= \sum_{l+m=n-j-1} \frac{q_{n-l}}{(m+1)^2} \\
+&= \frac{q_n}{(n-j)^2} + \frac{q_{n-1}}{(n-j-i)^2} + ... + \frac{q_{j+1}}{1^2} \\
+&= \sum_{i>j} \frac{q_i}{(j-i)^2} \\ 
+\end{align*}
+
+Note: We assume $r_j = 0$ for $j < 0$ and same in the case of $s_j$.
+
+\subsection*{Runtime analysis:}
+Using the result of the upper bound of running time of the algorithm to compute the convolution of 2 vectors of degree n in O(nlogn) , we can compute the vectors r and s in O(nlogn) time.
+For any particular value of j in $F_j$ , we only have to compute one subtraction and two multiplication which is constant time. Hence computing $F_j$ for all values of j is O(n) time. \\
+Therefore , total running time of the above algorithm is O(nlogn).
+
 
 \end{document}
