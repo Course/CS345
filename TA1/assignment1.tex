@@ -40,10 +40,10 @@ This takes O(n) time.
 \item We assume all these points are nodes and contain information about which chord they belong to and also a pointer to the other end of the chord. 
 \item For each point taken from the sorted list we do the following :
 	\begin{itemize}
-	\item If it is a start point we add it to the BST where each node is augmented with the size of the subtree rooted at that node. This takes O(log n) time because height of the BST in the worst case containing all the start nodes can not be greater than log n because there are only n chords and insertion in such a BST can not take more than O(log n).
+	\item If it is a start point we add it to the BST where each node is augmented with the size of the subtree rooted at that node (We have to increase the size field of all the nodes along the path where we insert the given node). This takes O(log n) time because height of the BST in the worst case containing all the start nodes can not be greater than log n because there are only n chords and insertion in such a BST can not take more than O(log n).
 	\item If it is an end point then we count the number of points greater than the corresponding start point (which can be found as we are keeping the pointer for it from the end point). We travel the BST from the root till we find the start point (maximum O(log n) steps) . While travelling along the path if we move left then we add (1 + size of right subtree which is stored in the augmented BST and can be found in O(1) time) and if we move right then we dont add anything. Thus the number of points greater than the given point can be found in O(log n) time. 
     \item This number correspond to the number of chords intersecting the given chord.
-    \item Delete the start point from the BST. This takes O(log n) time.
+    \item Delete the start point from the BST. This takes O(log n) time (We have to decrease the size field accordingly for the nodes on the path ).
 	\end{itemize}
 	We sum all the points of intersections . Since we remove the start point from the the BST after counting its intersections we are making sure that we count each intersection only once and not twice. 
 	Since we are doing this for n chords thus total O(n(log n)) time. 
