@@ -1,28 +1,59 @@
-\documentclass{article}
-\usepackage{graphicx}
-\usepackage{alltt}
-\usepackage{wrapfig}
-\usepackage{multicol}
-\usepackage{epsfig}
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage[lined,boxed]{algorithm2e}
 \usepackage{amsmath}
-\textwidth 6in
-\addtolength{\oddsidemargin}{-0.5in}
-\textheight 9in
-\addtolength{\topmargin}{-0.5in}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5cm}
-\setlength{\columnsep}{5cm}
-\topskip 0.0in
-%\pagestyle{empty}
-\thispagestyle{empty}
-\title{Assignment 1}
-\author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
-%\date{August 04, 2004}
-\date{}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{color}
+\input{rgb}
+\newcommand{\handout}[5]{
+  \noindent
+  \begin{center}
+  \framebox{
+    \vbox{
+      \hbox to 5.78in { {\bf CS345 : Algorithms II } \hfill #2 }
+      \vspace{4mm}
+      \hbox to 5.78in { {\Large \hfill #5  \hfill} }
+      \vspace{2mm}
+      \hbox to 5.78in { {\em #3 \hfill #4} }
+    }
+  }
+  \end{center}
+  \vspace*{4mm}
+}
 
+\newcommand{\lecture}[4]{\handout{#1}{#2}{#3}{}{#1}}
+
+
+\newcommand{\TT}[1]{\textsc{#1}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{exercise}[theorem]{\color{DarkBlue}{\bf Exercise}}
+\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\topmargin 0pt
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 8.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\parindent 0in
+\parskip 1.5ex
 
 \begin{document}
-\maketitle
 \section*{Question 1}
 The bounds for $n$ points for orthogonal range searching even for 3 sided query is same as 4 sided query because while counting the points between $y_1$ and $y_2$ in the augmented tree we can just count points greater than $y_1$ assuming $y_2$ to be infinity.  :
 \begin{itemize}
@@ -63,7 +94,6 @@ This takes O(n) time.
 	Since we are doing this for n chords thus total O(n(log n)) time. 
 \item Total time = O(n) + O(n(log n)) + O(n(log n)) = O(n(log n)).
 \end{itemize}
-\begin{alltt}
 findintersection(\(<(x\sb1,y\sb1),(x\sb2,y\sb2),\ldots ,(x\sb{n},y\sb{n})>\)) 
 \{ 
 for (i=1;i<=n;i++)
@@ -86,38 +116,68 @@ foreach point p in Points do
     \}                                                                       // O(n(log n))
     return count 
 \}
-\end{alltt}
+
 	
 \section*{Question 3}
-\subsection*{Lemma:} If an element u is k-majority in a multiset. Then removing k distinct element , u is still k-majority in the remaining multiset. 
-\subsection*{Proof:}
+\begin{lemma} If an element u is k-majority in a multiset. Then removing k distinct element , u is still k-majority in the remaining multiset. 
+\end{lemma}
+\begin{proof}
 Case 1 : u is not in the k elements removed .  Then $Count(u)>\frac{n}{k}>\frac{n-k}{k}$ . Hence it holds. \\
 Case 2 : u is in the k elements removed . Then 
 \[Count(u)+1>\frac{n}{k}\]
 \[Count(u)>\frac{n-k}{k}\]
 Hence it is still k majority in remaining n-k elements.
+\end{proof}
 
-\subsection*{Algorithm :}
-i $\leftarrow$ 0 ; \\
-d $\leftarrow$ 0 ; \\
-t $\leftarrow \lbrace \rbrace$ ; \\
-for i = 1 to n do \\
-\indent if b[i]$\notin$ t then 
 \begin{algorithm}
-  $L \leftarrow 1$\;
-  $R \leftarrow n$\;
-  $found = \textsc{false}$\;
-  \While{$L \le R$ and $found = \textsc{false}$}{
-    $mid \leftarrow (L+R)/2$\;
-    \eIf{$A[mid] = x$}{found = TRUE}{
-        \eIf{$A[mid]<x$}{$L \leftarrow mid+1$}{
-             $R \leftarrow mid-1$}}
-  }
-  return $found$;
-\caption{BinarySearch($A[1..n], x$)}
-\label{bin-search}
+$i\leftarrow 0$\;
+$d\leftarrow 0$;    ~~~~~$\backslash \backslash${\tt{Number of distinct values in t}} \\
+$t\leftarrow \lbrace \rbrace$\;
+\For{$i=1$ to $n$}{
+\eIf{$A[i] \notin t$}{
+	$t \leftarrow t\cup \lbrace (b[i],1) \rbrace$; ~~~~~~~~~~~$\backslash \backslash${\tt{Initial count for element is assigned 1}}
+	$d \leftarrow d+1$ \;
+	\If{$d=k$}{
+		decrease count of all elements in t by 1 and update d \;
+	}}
+	{
+     increase count of $A[i]$ in t by 1\;
+      }
+}
+Count the occurrence of the elements in t in $A$ and if any of it occurs more than $n/k$ times, then return that element else return NIL.
+\caption{\textsc{finding\_K-majority\_element}($A[1..n]$)}
+\label{majority-element-algo}
 
 \end{algorithm}
+\subsection*{ Implementation Details and Time complexity :} 
+t in the above algorithm is imlemented as AVL tree. The number of elements in t never exceed k so it takes O(k) size. \\ \\
+\textbf{Operations Performed}
+\begin{itemize}
+\item $t \leftarrow \lbrace \rbrace$ . Performed once . Complexity is $O(1)$.
+\item Search A[i] in t. Performed n times . Complexity is $n*O(log k)$ = $O(nlog k)$
+\item Insert an element or increase the count of an element by 1. Both the operations together is performed n times because one belongs to if and other belongs to else , so in each iteration  only one of them is executed. Both takes O(log k) time. So for n iterations Complexity is $O(nlog k)$.
+\item Decrease count of all k elements by 1 and update d. The thing to note is this operation can be performed atmost $\frac{n}{k}$ times . It requires traversal of the whole tree and deleting a node if its count becomes 0 . So for each element it takes $O(log k)$ time . So $O(k log k)$ time for k elements . So complexity is $O(\frac{n}{k}klog k)$ = $O(nlog k)$. 
+\item Checking for an element whether it is k-majority or not. It is performed for last k-1 elements . So Complexity is $O(nk)$.
+\end{itemize}
+So the net complexity of the algorithm is $O(nk)$.
+
+\subsection*{Loop invariant}
+If u is the k-majority in $A$ then it is also k majority in $A'=B \cup \lbrace A[i+1],A[i+2],\ldots A[n-1] \rbrace$ ($\cup$ is concatenation operation or union without removing duplicates) where \[B = \lbrace \underbrace{e,e \ldots ,e}_{c \; times} | \forall (e,c) \in t \rbrace \] after $i^{th}$ iteration.
+\begin{proof}
+By induction \\
+\textbf{Base Case :}  $A'=A$ . Hence it holds trivially. \\
+\textbf{Induction Hypothesis :} u is k-majority in $A'$ after $i^{th}$ interation. \\
+\textbf{Induction Step :} At $i+1^{th}$ iteration : \\
+\begin{itemize}
+\item if $A[i+1] \notin t$ then $ t \leftarrow t \cup \lbrace (A[i+1],1) \rbrace$ \\
+\[A'=B\cup \lbrace A[i+1],A[i+2],\ldots A[n-1] \rbrace\]
+\[A'_{new} = (B\cup \lbrace A[i+1]\rbrace)\cup \lbrace A[i+2],A[i+3],\ldots,A[n-1]\rbrace=A'\]
+Hence u is still k-majority in $A'_{new}$.
+\item if $d=k$ after previous step then count of all k elements is decreased by 1. So k distinct elements are removed from $A'_{new}$. By lemma 1 u is still k-majority in the remaining multiset.  
+\end{itemize}
+\end{proof}
+
+
 
 \section*{Question 4}
 Let : 
