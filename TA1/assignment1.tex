@@ -23,6 +23,20 @@
 
 \begin{document}
 \maketitle
+\section*{Question 1}
+The bounds for $n$ points for orthogonal range searching even for 3 sided query is same as 4 sided query because while counting the points between $y_1$ and $y_2$ in the augmented tree we can just count points greater than $y_1$ assuming $y_2$ to be infinity.  :
+\begin{itemize}
+\item $O(nlog n)$ space 
+\item $O(nlog^2 n)$ preprocessing time 
+\item $O(log^2 n + k)$ query time (where k was the number of points in the range)
+\end{itemize}
+Now if we can reduce the number of points from $n$ to $\frac{n}{log n}$ then :
+\begin{itemize}
+\item space = $c\frac{n}{log n}log \frac{n}{log n}$ = $c(n - n\frac{log (log n)}{log n})$ = $O(n)$
+\item preprocessing time = $c(\frac{n}{log n}log^2 \frac{n}{log n})$ = $c(nlog n - \frac{nlog^2 log n}{log n})$ = $O(nlog n)$
+\item query time = $c(log^2 \frac{n}{log n})$ = 
+\end{itemize}
+
 \section*{Question 2}
 We will define our own coordinate system and assume that the conversion from the given system to ours can be done in $O(1)$ time for each point . We define the coordinate system as follows . 
 \begin{itemize}
@@ -74,7 +88,37 @@ foreach point p in Points do
 \}
 \end{alltt}
 	
- 
+\section*{Question 3}
+\subsection*{Lemma:} If an element u is k-majority in a multiset. Then removing k distinct element , u is still k-majority in the remaining multiset. 
+\subsection*{Proof:}
+Case 1 : u is not in the k elements removed .  Then $Count(u)>\frac{n}{k}>\frac{n-k}{k}$ . Hence it holds. \\
+Case 2 : u is in the k elements removed . Then 
+\[Count(u)+1>\frac{n}{k}\]
+\[Count(u)>\frac{n-k}{k}\]
+Hence it is still k majority in remaining n-k elements.
+
+\subsection*{Algorithm :}
+i $\leftarrow$ 0 ; \\
+d $\leftarrow$ 0 ; \\
+t $\leftarrow \lbrace \rbrace$ ; \\
+for i = 1 to n do \\
+\indent if b[i]$\notin$ t then 
+\begin{algorithm}
+  $L \leftarrow 1$\;
+  $R \leftarrow n$\;
+  $found = \textsc{false}$\;
+  \While{$L \le R$ and $found = \textsc{false}$}{
+    $mid \leftarrow (L+R)/2$\;
+    \eIf{$A[mid] = x$}{found = TRUE}{
+        \eIf{$A[mid]<x$}{$L \leftarrow mid+1$}{
+             $R \leftarrow mid-1$}}
+  }
+  return $found$;
+\caption{BinarySearch($A[1..n], x$)}
+\label{bin-search}
+
+\end{algorithm}
+
 \section*{Question 4}
 Let : 
 \[r = x * z \] is the convolution of 2 vectors x and z and \\
