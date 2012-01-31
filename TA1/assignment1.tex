@@ -337,9 +337,12 @@ Hence ,
 Note: We assume $r_j = 0$ for $j < 0$ and same in the case of $s_j$.
 
 \subsection*{Runtime analysis:}
-Using the result of the upper bound of running time of the algorithm to compute the convolution of 2 vectors of degree n in O(nlogn) , we can compute the vectors r and s in O(nlogn) time.
-For any particular value of j in $F_j$ , we only have to compute one subtraction and two multiplication which is constant time. Hence computing $F_j$ for all values of j is O(n) time. \\
-Therefore , total running time of the above algorithm is O(nlogn).
-
+\begin{itemize}
+\item The FFT algorithm to compute the convolution of 2 vectors of degree n is O(nlogn)
+\item Hence , we can compute the vectors r and s in O(nlogn) time.
+\item For any particular value of j in $F_j$ , we only have to compute one subtraction and two multiplication which is constant time. 
+\item Hence computing $F_j$ for all values of j is O(n) time. 
+\item Therefore , total running time of the above algorithm is O(nlogn).
+\end{itemize}
 
 \end{document}
