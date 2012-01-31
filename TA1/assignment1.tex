@@ -55,18 +55,69 @@
 
 \begin{document}
 \section*{Question 1}
-The bounds for $n$ points for orthogonal range searching even for 3 sided query is same as 4 sided query because while counting the points between $y_1$ and $y_2$ in the augmented tree we can just count points greater than $y_1$ assuming $y_2$ to be infinity.  :
+
+\subsection*{Design of data structure:}
 \begin{itemize}
-\item $O(nlog n)$ space 
-\item $O(nlog^2 n)$ preprocessing time 
-\item $O(log^2 n + k)$ query time (where k was the number of points in the range)
+\item Given the set P of points in 2-D space , let us assume that all the points in P have pairwise distinct coordinates. \\
+\item If P is empty , then the binary search tree is an empty leaf . Otherwise,
+\item let $p_{max}$ = point with the largest y-coordinate in P
+\item $x_{mid}$ = median of x coordinates of points in $P \setminus \{p_{max}\}$
+\item $P_{l}$ = \{$p \in P \setminus \{p_{max}\} : x \leq x_{mid}$\}
+\item $P_{r}$ = \{$p \in P \setminus \{p_{max}\} : x > x_{mid}$\}
+\item Point $p_{max}$ is stored at the root
+\item The left subtree is a binary search tree of $P_{l}$
+\item The right subtree is a binary search tree of $P_{r}$
 \end{itemize}
-Now if we can reduce the number of points from $n$ to $\frac{n}{log n}$ then :
+
+In other words , our new binary search tree acts like a max-heap with respect to y-coordinates and a standard binary search tree with respect to x-coordinates.
+
+\begin{algorithm}
+\SetKwFunction{ConstructTree}{ConstructTree}
+\SetKwData{Left}{v.left}
+\SetKwData{Right}{v.right}
+\SetKw{Return}{return}
+\ConstructTree{P} { \\
+\If{$P = \phi$} {\Return nil \;}
+
+v.data $\leftarrow$ point with largest y-coordinate in P ; ~~~~$\backslash \backslash$ {\tt{$O(n)$}} \\
+v.mid $\leftarrow$ median of x-coordinates in P ; ~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$O(n)$}} \\
+$P_{l} \leftarrow $ \{$p \in P \setminus \{p_{max}\} : x \leq v_{mid}$\} ; ~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$O(n)$}} \\
+$P_{r} \leftarrow $ \{$p \in P \setminus \{p_{max}\} : x > v_{mid}$\} ; ~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$O(n)$}} \\
+\Left $\leftarrow$ \ConstructTree{$P_{l}$} ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$T(n/2)$}} \\
+\Right $\leftarrow$ \ConstructTree{$P_{r}$} ; ~~~~~~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$T(n/2)$}} \\
+return v; 
+}
+\end{algorithm}
+
+
+\subsection*{Space Complexity:}  
 \begin{itemize}
-\item space = $c\frac{n}{log n}log \frac{n}{log n}$ = $c(n - n\frac{log (log n)}{log n})$ = $O(n)$
-\item preprocessing time = $c(\frac{n}{log n}log^2 \frac{n}{log n})$ = $c(nlog n - \frac{nlog^2 log n}{log n})$ = $O(nlog n)$
-\item query time = $c(log^2 \frac{n}{log n})$ = 
+\item Size of each node is constant since it has at most 4 fields i.e data,mid,left and right
+\item Every node in the tree maps to exactly one point in the set P
+\item Total number of points in set P is n
+\item Hence , total space occupied by all the nodes is O(n)
 \end{itemize}
+
+\subsection*{Preprocessing Time:}
+
+Preprocessing time = Time taken to execute the ConstructTree function
+
+T(n) = 2T(n/2) + cn
+     = 2(2T(n/4) + cn) + cn 
+
+
+
+
+Hence, preprocessing time is O(nlogn)
+
+\subsection*{Query Time:}
+
+\begin{algorithm}
+Write algorithm here
+\end{algorithm}
+  
+
+
 
 \pagebreak
 
