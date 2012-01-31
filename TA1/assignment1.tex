@@ -101,11 +101,16 @@ return v;
 \subsection*{Preprocessing Time:}
 
 Preprocessing time = Time taken to execute the ConstructTree function
+\[T(n) \leq 2T(\frac{n}{2}) + cn \]
+\[T(0) \leq c\]
 
-T(n) = 2T(n/2) + cn
-     = 2(2T(n/4) + cn) + cn 
-
-
+\begin{align*}
+T(n) & = 2T(n/2) + cn \\
+&= 2(2T(n/4) + cn/2) + cn \\
+&= 2^logn * T(1) + cn * logn \\
+&= cnlogn   \\
+&= O(nlogn) \\
+\end{align*}
 
 
 Hence, preprocessing time is O(nlogn)
@@ -115,6 +120,29 @@ Hence, preprocessing time is O(nlogn)
 \begin{algorithm}
 Write algorithm here
 \end{algorithm}
+
+\begin{itemize}
+\item Time required for reporting the $|S|$ points is the sum total of time required to visit all the possible set of points in the above algorithm. 
+\item The set of points visited by the algorithm is the union of 4 non-disjoint subsets : -
+\begin{itemize}
+\item S = $\{ (x,y) \in P : x_1 \leq x \leq x_2 and y \geq y_0 \}$ 
+\item $X_L$ = $\{ (x,y) \in P : x \leq x_1 \}$
+\item $X_G$ = $\{ (x,y) \in P : x \geq x_2 \}$
+\item $Y_L$ = $\{ (x,y) \in P : y \leq y_0 \}$
+\end{itemize}
+\item Points from set S are reported whereas points from other 3 sets are discarded
+\item S requires O($|S|$) time
+\item $X_L$ and $X_R$ requires O(logn) time since there are O(logn) nodes in the path from $x_1$ to $x_2$
+\item For $Y_L$ ,
+\begin{itemize}
+\item If the root of a subtree has $y < y_0$ , we can completely discard that subtree.
+\item The parent node of this subtree must have $y \geq y_0$ and it must belong to S.
+\item The candidate subtrees for $Y_L$ can be discarded from its corresponding parent nodes in constant time.
+\item Number of such parent nodes can be O($|S|$)
+\item Hence, $Y_L$ requires O($|S|$) time 
+\end{itemize}
+\item Hence , total query time is O(logn + $|S|$) 
+\end{itemize}
   
 
 
