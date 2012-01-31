@@ -260,9 +260,14 @@ t in the above algorithm is imlemented as AVL tree. The number of elements in t 
 \item Search A[i] in t. Performed n times . Complexity is $n*O(log k)$ = $O(nlog k)$
 \item Insert an element or increase the count of an element by 1. Both the operations together is performed n times because one belongs to if and other belongs to else , so in each iteration  only one of them is executed. Both takes O(log k) time. So for n iterations Complexity is $O(nlog k)$.
 \item Decrease count of all k elements by 1 and update d. The thing to note is this operation can be performed atmost $\frac{n}{k}$ times . It requires traversal of the whole tree and deleting a node if its count becomes 0 . So for each element it takes $O(log k)$ time . So $O(k log k)$ time for k elements . So complexity is $O(\frac{n}{k}klog k)$ = $O(nlog k)$. 
-\item Checking for an element whether it is k-majority or not. It is performed for last k-1 elements . So Complexity is $O(nk)$.
+\item Checking for an element whether it is k-majority or not. It is performed for last k-1 elements . We have to do it  $O(n log k)$ for overall algorithm to be $O(n log k)$. It is done as follows:
+\begin{itemize}
+\item Construct a BST (height balanced) for these k-1 elements. This takes $O(klogk)$ . Since k is less than n . So it is less than $O(nlog k)$.
+\item For each element of the original array , search it in the BST . If it appears then increase the count of that element by 1. This takes $O(logk)$ for a single element. So total $O(n log k)$ time. 
+\item Now find the element with maximum count in the BST . This requires scanning the whole BST which is $O(k)$ . If the count is greater than $\frac{n}{k}$ then returnt the element . 
+\end{itemize} 
 \end{itemize}
-So the net complexity of the algorithm is $O(nk)$.
+So the net complexity of the algorithm is $O(nlog k)$.
 
 \subsection*{Loop invariant}
 If u is the k-majority in $A$ then it is also k majority in $A'=B \cup \lbrace A[i+1],A[i+2],\ldots A[n-1] \rbrace$ ($\cup$ is concatenation operation or union without removing duplicates) where \[B = \lbrace \underbrace{e,e \ldots ,e}_{c \; times} | \forall (e,c) \in t \rbrace \] after $i^{th}$ iteration.
