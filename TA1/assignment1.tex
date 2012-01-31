@@ -77,6 +77,7 @@ In other words , our new binary search tree acts like a max-heap with respect to
 \SetKwData{Right}{v.right}
 \SetKw{Return}{return}
 \ConstructTree{P} { \\
+\Indp
 \If{$P = \phi$} {\Return nil \;}
 
 v.data $\leftarrow$ point with largest y-coordinate in P ; ~~~~$\backslash \backslash$ {\tt{$O(n)$}} \\
@@ -86,6 +87,7 @@ $P_{r} \leftarrow $ \{$p \in P \setminus \{p_{max}\} : x > v_{mid}$\} ; ~~~~~~~~
 \Left $\leftarrow$ \ConstructTree{$P_{l}$} ; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$T(n/2)$}} \\
 \Right $\leftarrow$ \ConstructTree{$P_{r}$} ; ~~~~~~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$T(n/2)$}} \\
 return v; 
+\Indm
 }
 \caption{\textsc{ConstructTree}(P)}
 \end{algorithm}
@@ -137,10 +139,12 @@ Start from the root node v and find the first split-node $v_{split}$ such that $
     }
 }
 \RH{v} { \\
+\Indp
 \eIf{v.data.y $< y_0$} {return \;}
 {report it in S \;
 \RH{v.left} \;
 \RH{v.right} \;
+\Indm
 }
 }
 \caption{\textsc{3-SidedRangeQuery}(P,$x_1$,$x_2$,$y_0$)}
