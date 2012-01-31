@@ -87,6 +87,7 @@ $P_{r} \leftarrow $ \{$p \in P \setminus \{p_{max}\} : x > v_{mid}$\} ; ~~~~~~~~
 \Right $\leftarrow$ \ConstructTree{$P_{r}$} ; ~~~~~~~~~~~~~~~~~~~~~~~~~~$\backslash \backslash$ {\tt{$T(n/2)$}} \\
 return v; 
 }
+\caption{\textsc{ConstructTree}(P)}
 \end{algorithm}
 
 
@@ -105,11 +106,11 @@ Preprocessing time = Time taken to execute the ConstructTree function
 \[T(0) \leq c\]
 
 \begin{align*}
-T(n) & = 2T(n/2) + cn \\
-&= 2(2T(n/4) + cn/2) + cn \\
-&= 2^logn * T(1) + cn * logn \\
-&= cnlogn   \\
-&= O(nlogn) \\
+T(n) & \leq 2T(n/2) + cn \\
+&\leq 2(2T(n/4) + cn/2) + cn \\
+&\leq 2^{logn} * T(0) + cn * logn \\
+&\leq cn + cnlogn   \\
+&\leq O(nlogn) \\
 \end{align*}
 
 
@@ -118,7 +119,29 @@ Hence, preprocessing time is O(nlogn)
 \subsection*{Query Time:}
 
 \begin{algorithm}
-Write algorithm here
+\SetKwFunction{RH}{reportHeap}
+Start from the root node v and find the first split-node $v_{split}$ such that $v_{split}.x \in [x_l,x_r]$
+\ForEach{node u on the path from root node v to node $v_{split}$}{
+    \If{u.mid $\in [x_1,x_2] \times [y_0,\infty]$}{
+	report u.data in S \;    
+    }
+} 
+\ForEach{node u on the path of $x_l$ in the left subtree of $v_{split}$}{
+    \If{the path goes left at u}{
+    \RH{u.right} \;
+    }
+}
+\ForEach{node u on the path of $x_r$ in the right subtree of $v_{split}$}{
+    \If{the path goes right at u}{
+    \RH{u.left} \;
+    }
+}
+\RH{v} { \\
+\If{v is nil} {return \;}
+\If{v.mid.y $\geq$ $y_0$} {report it in S \;}
+\RH{v.left} \;
+\RH{v.right} \;
+}
 \end{algorithm}
 
 \begin{itemize}
@@ -136,10 +159,10 @@ Write algorithm here
 \item For $Y_L$ ,
 \begin{itemize}
 \item If the root of a subtree has $y < y_0$ , we can completely discard that subtree.
-\item The parent node of this subtree must have $y \geq y_0$ and it must belong to S.
+\item The parent node of this subtree must have $y \geq y_0$ and it must belong to $S \cup X_L \cup X_G$
 \item The candidate subtrees for $Y_L$ can be discarded from its corresponding parent nodes in constant time.
-\item Number of such parent nodes can be O($|S|$)
-\item Hence, $Y_L$ requires O($|S|$) time 
+\item Number of such parent nodes can be O($|S| + logn$)
+\item Hence, $Y_L$ requires O($|S| + logn$) time 
 \end{itemize}
 \item Hence , total query time is O(logn + $|S|$) 
 \end{itemize}
