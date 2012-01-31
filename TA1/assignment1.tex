@@ -71,34 +71,36 @@ Now if we can reduce the number of points from $n$ to $\frac{n}{log n}$ then :
 \pagebreak
 
 \section*{Question 2}
-We will define our own coordinate system and assume that the conversion from the given system to ours can be done in $O(1)$ time for each point . We define the coordinate system as follows . 
+We will define our own coordinate system as follows . 
 \begin{itemize}
 \item Choose any arbitrary point on the circle which is not the endpoint of any chord .
 \item This is called zero . Now travel clockwise from this point .
 \item The degrees we travel from this point to the concerned point is the value of that point . 
 \item So minimum value can be 0 and maximum can be 360. 
 \end{itemize}
+The conversion from the given system to ours can be done in $O(1)$ time for each point . Hence total $O(n)$ time .\\
 Now algorithm to give the no. of intersections is : \\
 \begin{itemize}
 \item We assume that point are given in some coordinate system with $(x_i,y_i)$ as the two endpoints of the $i^{th}$ chord.
 \item We convert each point into the coordinate system described above and for a chord the point which has lower value (closer to the zero point) is marked as the start point of the chord and the other as the corresponding end point.
 This takes O(n) time.
 \item Now we sort all the points (including all the start and end points).
-\item We assume all these points are nodes and contain information about which chord they belong to and also a pointer to the other end of the chord. 
+\item These nodes (points) contain information about which chord they belong to and also a pointer to the other end of the chord. 
 \item For each point taken from the sorted list we do the following :
 	\begin{itemize}
 	\item If it is a start point we add it to the BST where each node is augmented with the size of the subtree rooted at that node (We have to increase the size field of all the nodes along the path where we insert the given node). This takes O(log n) time because height of the BST in the worst case containing all the start nodes can not be greater than log n because there are only n chords and insertion in such a BST can not take more than O(log n).
 	\item If it is an end point then we count the number of points greater than the corresponding start point (which can be found as we are keeping the pointer for it from the end point). We travel the BST from the root till we find the start point (maximum O(log n) steps) . While travelling along the path if we move left then we add (1 + size of right subtree which is stored in the augmented BST and can be found in O(1) time) and if we move right then we dont add anything. Thus the number of points greater than the given point can be found in O(log n) time. 
     \item This number correspond to the number of chords intersecting the given chord.
-    \item Delete the start point from the BST. This takes O(log n) time (We have to decrease the size field accordingly for the nodes on the path ).
+    \item Delete the start point from the BST. This takes O(log n) time (We have to decrease the size field accordingly for the nodes on the path ). This is same as BST (augmented with size field) discussed in the class.
 	\end{itemize}
 	We sum all the points of intersections . Since we remove the start point from the the BST after counting its intersections we are making sure that we count each intersection only once and not twice. 
 	Since we are doing this for n chords thus total O(n(log n)) time. 
-\item Total time = O(n) + O(n(log n)) + O(n(log n)) = O(n(log n)).
+\item Total time = $O(n)$(for coordinate conversion) + $O(nlog n)$(for sorting) + $O(nlog n)$(for the final counting) = O(n(log n)).
 \end{itemize}
 \begin{algorithm}
 \For{$i=1$ to $n$}{
-        Convert the point into above coordinate system and store into $(s_{i},e_{i})$ such that $s_{i} < e_{i}$ \;
+        Convert the point into above coordinate system and store into $(s_{i},e_{i})$ such that $s_{i} < e_{i}$.
+        Each point contains pointer to its corresponding other point of the chord \;
     } $\backslash \backslash$ {\tt{$O(n)$ for the loop}} \\
 $count \leftarrow  0$ \;
 $B \leftarrow$ Empty BST where each node augmented with the size field \;
