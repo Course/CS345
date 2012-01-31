@@ -120,27 +120,28 @@ Hence, preprocessing time is O(nlogn)
 
 \begin{algorithm}
 \SetKwFunction{RH}{reportHeap}
-Start from the root node v and find the first split-node $v_{split}$ such that $v_{split}.x \in [x_1,x_2]$
+Start from the root node v and find the first split-node $v_{split}$ such that $v_{split}.mid \in [x_1,x_2]$
 \ForEach{node u on the path from root node v to node $v_{split}$}{
     \If{u.mid $\in [x_1,x_2] \times [y_0,\infty]$}{
 	report u.data in S \;    
     }
 } 
-\ForEach{node u on the path of $x_l$ in the left subtree of $v_{split}$}{
+\ForEach{node u on the path upto node containing median $x_1$ in the left subtree of $v_{split}$}{
     \If{the path goes left at u}{
     \RH{u.right} \;
     }
 }
-\ForEach{node u on the path of $x_r$ in the right subtree of $v_{split}$}{
+\ForEach{node u on the path of node containing median $x_2$ in the right subtree of $v_{split}$}{
     \If{the path goes right at u}{
     \RH{u.left} \;
     }
 }
 \RH{v} { \\
-\If{v is nil} {return \;}
-\If{v.mid.y $\geq$ $y_0$} {report it in S \;}
+\eIf{v.data.y $< y_0$} {return \;}
+{report it in S \;
 \RH{v.left} \;
 \RH{v.right} \;
+}
 }
 \caption{\textsc{3-SidedRangeQuery}(P,$x_1$,$x_2$,$y_0$)}
 \end{algorithm}
