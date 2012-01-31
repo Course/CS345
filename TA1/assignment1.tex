@@ -122,10 +122,11 @@ Hence, preprocessing time is O(nlogn)
 
 \begin{algorithm}
 \SetKwFunction{RH}{reportHeap}
+\tcc{Let $v_{split}$ is the least common ancestor of $x_1$ and $x_2$}
 Start from the root node v and find the first split-node $v_{split}$ such that $v_{split}.mid \in [x_1,x_2]$
-\ForEach{node u on the path from root node v to node $v_{split}$}{
+\ForEach{node u on the path from node $v_{split}$ to node containing median $x_1$ and to node containing median $x_2$}{
     \If{u.mid $\in [x_1,x_2] \times [y_0,\infty]$}{
-	report u.data in S \;    
+	report it in S \;    
     }
 } 
 \ForEach{node u on the path upto node containing median $x_1$ in the left subtree of $v_{split}$}{
@@ -139,6 +140,7 @@ Start from the root node v and find the first split-node $v_{split}$ such that $
     }
 }
 \RH{v} { \\
+\tcc{Reports all the points in tree rooted at v (as heap) whose y coordinates are greater than or equal to $y_0$} 
 \Indp
 \eIf{v.data.y $< y_0$} {return \;}
 {report it in S \;
