@@ -122,7 +122,7 @@ Write algorithm here
 \end{algorithm}
 
 \begin{itemize}
-\item Time required for reporting the $|S|$ points is the sum total of time required to visit all the possible set of points in the above algorithm. 
+\item Time required for each query is the sum of time required to visit $|S|$ points in set S and the time spent in visiting (and discarding) the points which do not belong to S. 
 \item The set of points visited by the algorithm is the union of 4 non-disjoint subsets : -
 \begin{itemize}
 \item S = $\{ (x,y) \in P : x_1 \leq x \leq x_2 and y \geq y_0 \}$ 
