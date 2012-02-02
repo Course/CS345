@@ -463,33 +463,43 @@ class AVLTree():
                 out_string += level_string                    
         return out_string
 
+# merge :: avl -> avl -> avl 
+def merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n)
+    pass
+
+# split :: avl -> node -> (avl,avl)
+def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
+    pass
+
+
 if __name__ == "__main__":    
-    """check empty tree creation"""
-    a = AVLTree ()
-    a.sanity_check()
+
+    #"""check empty tree creation"""
+    #a = AVLTree ()
+    #a.sanity_check()
     
-    """check not empty tree creation"""
-    seq = [1,2,3,4,5,6,7,8,9,10,11,12]
-    seq_copy = [1,2,3,4,5,6,7,8,9,10,11,12]
-    #random.shuffle(seq)
-    b = AVLTree (seq)
-    b.sanity_check()
+    #"""check not empty tree creation"""
+    #seq = [1,2,3,4,5,6,7,8,9,10,11,12]
+    #seq_copy = [1,2,3,4,5,6,7,8,9,10,11,12]
+    ##random.shuffle(seq)
+    #b = AVLTree (seq)
+    #b.sanity_check()
     
-    """check that inorder traversal on an AVL tree 
-    (and on a binary search tree in the whole) 
-    will return values from the underlying set in order"""
-    assert (b.as_list(3) == b.as_list(1) == seq_copy)
+    #"""check that inorder traversal on an AVL tree 
+    #(and on a binary search tree in the whole) 
+    #will return values from the underlying set in order"""
+    #assert (b.as_list(3) == b.as_list(1) == seq_copy)
     
-    """check that node deletion works"""
-    c = AVLTree (random_data_generator (10000))
-    before_deletion = c.elements_count
-    for i in random_data_generator (1000):
-        c.remove(i)
-    after_deletion = c.elements_count
-    c.sanity_check()
-    assert (before_deletion >= after_deletion)
-    #print c.out()
+    #"""check that node deletion works"""
+    #c = AVLTree (random_data_generator (10000))
+    #before_deletion = c.elements_count
+    #for i in random_data_generator (1000):
+        #c.remove(i)
+    #after_deletion = c.elements_count
+    #c.sanity_check()
+    #assert (before_deletion >= after_deletion)
+    ##print c.out()
     
-    """check that an AVL tree's height is strictly less than 
-    1.44*log2(N+2)-1 (there N is number of elements)"""
-    assert (c.height() < 1.44 * math.log(after_deletion+2, 2) - 1)
+    #"""check that an AVL tree's height is strictly less than 
+    #1.44*log2(N+2)-1 (there N is number of elements)"""
+    #assert (c.height() < 1.44 * math.log(after_deletion+2, 2) - 1)
