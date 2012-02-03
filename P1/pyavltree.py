@@ -13,7 +13,7 @@ class Node():
         self.rightChild = None
         self.height = 0 
     
-    def __str__(self):
+    def __repr__(self):
         return str(self.key) + "(" + str(self.height) + ")"
     
     def is_leaf(self):
@@ -465,8 +465,21 @@ class AVLTree():
                 out_string += level_string                    
         return out_string
 
-# merge :: avl -> avl -> avl 
-def merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n)
+
+    def list_ancestors(self, node):
+        currentNode = self.find(node.key)
+        ancestor_list = []
+        while currentNode.parent is not None:
+            ancestor_list.append(currentNode.parent)
+            currentNode = currentNode.parent
+        return ancestor_list
+
+# replace a subtree T' in T by another AVLTree of height h+1
+def replace_sub_tree(self, root, tree):
+    pass
+
+# special merge :: avl -> avl -> avl 
+def special_merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n)
     pass
 
 # split :: avl -> node -> (avl,avl)
