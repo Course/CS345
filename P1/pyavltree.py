@@ -1,4 +1,6 @@
+#!/bin/python
 import random, math
+import sys
 def random_data_generator (max_r):
     for i in xrange(max_r):
         yield random.randint(0, max_r)
@@ -471,20 +473,64 @@ def merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n
 def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
     pass
 
+# link 
+def link(u,v,w):
+    pass
+
+# cut 
+def cut(u,v):
+    pass
+
+# multiadd 
+def multi_add_weight(u,v,d):
+    pass
+
+# reverse path 
+def reverse_path(u):
+    pass
+
+# report_min
+def report_min(u,v):
+    pass
+
+# is_reachable 
+def is_reachable(u,v):
+    pass 
+    
 
 if __name__ == "__main__":    
-
+    nodes = int(input())
+    avl=[]
+    for i in range(nodes):
+        avl.append(AVLTree([i]))
+    for lines in sys.stdin :
+        l = lines.split(' ')
+        fn = l[0]
+        arg = [int(i) for i in l[1:]]
+        if fn=='L':
+            link(arg[0],arg[1],arg[2])
+        elif fn=='C':
+            cut(arg[0],arg[1])
+        elif fn=='A':
+            multi_add_weight(arg[0],arg[1],arg[2])
+        elif fn=='R':
+            reverse_path(arg[0])
+        elif fn=='M':
+            report_min(arg[0],arg[1])
+        elif fn=='I':
+            is_reachable(arg[0],arg[1])
+        else:
+            print ("Unrecognised input")
+            break
     #"""check empty tree creation"""
     #a = AVLTree ()
-    #a.sanity_check()
-    
+    #a.sanity_check()    
     #"""check not empty tree creation"""
     #seq = [1,2,3,4,5,6,7,8,9,10,11,12]
     #seq_copy = [1,2,3,4,5,6,7,8,9,10,11,12]
     ##random.shuffle(seq)
     #b = AVLTree (seq)
     #b.sanity_check()
-    
     #"""check that inorder traversal on an AVL tree 
     #(and on a binary search tree in the whole) 
     #will return values from the underlying set in order"""
@@ -499,7 +545,6 @@ if __name__ == "__main__":
     #c.sanity_check()
     #assert (before_deletion >= after_deletion)
     ##print c.out()
-    
     #"""check that an AVL tree's height is strictly less than 
     #1.44*log2(N+2)-1 (there N is number of elements)"""
     #assert (c.height() < 1.44 * math.log(after_deletion+2, 2) - 1)
