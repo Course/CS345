@@ -440,7 +440,13 @@ class AVLTree():
         else:
             node2.rightChild = node1
             node1.parent = node2           
-           
+    
+    # save the tree into a png image
+    # filename should be "name.png"
+    def toPNG(self, filename):
+        from visualize import save_bst
+        save_bst(self.rootNode, filename)
+
     # use for debug only and only with small trees            
     def out(self, start_node = None):
         if start_node == None:
