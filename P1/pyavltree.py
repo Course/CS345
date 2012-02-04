@@ -10,7 +10,12 @@ class Node():
         self.key = key
         self.parent = None
         self.leftChild = None
+        self.leftWeight = None
         self.rightChild = None
+        self.rightWeight = None
+        self.minWeight = None
+        self.addFactor = 0
+        self.revBit = 0
         self.height = 0 
     
     def __repr__(self):
