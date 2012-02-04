@@ -28,6 +28,15 @@ class Node():
             return self.rightChild.height
         else:
             return -1
+
+    def is_left_child(self):
+        return (self.parent.leftChild == self)
+
+    def is_right_child(self):
+        return (self.parent.rightChild == self)
+
+    def is_root(self):
+        return (self.parent == None)
         
     def balance (self):
         return (self.leftChild.height if self.leftChild else -1) - (self.rightChild.height if self.rightChild else -1)
@@ -46,7 +55,10 @@ class AVLTree():
             return self.rootNode.height
         else:
             return 0
-        
+
+    # how to do it efficiently
+    def get_sub_tree(self,from_node):
+        pass
     def rebalance (self, node_to_rebalance):
         self.rebalance_count += 1
         A = node_to_rebalance 
@@ -480,9 +492,51 @@ class AVLTree():
             currentNode = currentNode.parent
         return ancestor_list
 
-# replace a subtree T' in T by another AVLTree of height h+1
-def replace_sub_tree(self, root, tree):
-    pass
+    # replace a subtree T' in T by another AVLTree of height h+1
+    # no checks for height is needed?
+    def replace_sub_tree(self, old_root, new_root):
+        node_to_replace = old_root
+        parent = node_to_replace.parent
+        if node_to_replace.is_root():
+            pass
+#BUG HERE
+        if node_to_replace.is_left_child():
+            parent.leftChild = new_root
+            new_root.parent = parent
+        if node_to_replace.is_right_child():
+            parent.rightChild = new_root
+            new_root.parent = parent
+        self.recompute_heights(new_root)
+        for node in self.list_ancestors(new_root):
+            if not node.balance () in [-1, 0, 1]:
+                self.rebalance(node)
+
+    def special_merge(self, tree):
+        taller_tree = tree if tree.height > self.height else self
+        shorter_tree = tree if taller_tree == self else self
+        bigger_tree = tree if tree.rootNode.key > self.rootNode.key else self
+        smaller_tree = tree if bigger_tree == self else self
+        h = shorter_tree.height()
+        node = taller_tree.rootNode
+        #if node.height == h or node.height == h+1:
+        #    pass
+        if taller_tree == bigger_tree:
+            while (node.leftChild.height != h and node.leftChild.height != h+1):
+                node = node.leftChild
+            node = node.leftChild
+        else:
+            while (node.rightChild.height != h and node.rightChild.height != h+1):
+                node = node.rightChild
+            node = node.rightChild
+        x_key = smaller_tree.find_biggest(smaller_tree.rootNode)
+        smaller_tree.remove(x_key)
+        newroot = Node(x_key)
+        newroot.leftChild = smaller_tree.rootNode
+        newroot.rightChild = node
+        newroot.height = newroot.max_children_height() + 1
+        taller_tree.replace_sub_tree(node, newroot)
+        return taller_tree
+
 
 # special merge :: avl -> avl -> avl 
 def special_merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n)
