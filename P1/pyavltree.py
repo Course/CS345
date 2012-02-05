@@ -1,6 +1,7 @@
 #!/bin/python
 import random, math
 import sys
+import pdb
 def random_data_generator (max_r):
     for i in xrange(max_r):
         yield random.randint(0, max_r)
@@ -503,21 +504,23 @@ class AVLTree():
         node_to_replace = old_root
         parent = node_to_replace.parent
         if node_to_replace.is_root():
-            pass
-#BUG HERE
-        if node_to_replace.is_left_child():
+            self.rootNode = new_root
+        elif node_to_replace.is_left_child():
             parent.leftChild = new_root
             new_root.parent = parent
-        if node_to_replace.is_right_child():
+        elif node_to_replace.is_right_child():
             parent.rightChild = new_root
             new_root.parent = parent
+        else:
+            print "Cannot reach here"
         self.recompute_heights(new_root)
         for node in self.list_ancestors(new_root):
             if not node.balance () in [-1, 0, 1]:
                 self.rebalance(node)
 
     def special_merge(self, tree):
-        taller_tree = tree if tree.height > self.height else self
+        pdb.set_trace()
+        taller_tree = tree if tree.height() >= self.height() else self
         shorter_tree = tree if taller_tree == self else self
         bigger_tree = tree
         smaller_tree = self
@@ -526,14 +529,12 @@ class AVLTree():
         #if node.height == h or node.height == h+1:
         #    pass
         if taller_tree == bigger_tree:
-            while (node.leftChild.height != h and node.leftChild.height != h+1):
+            while (node.height != h and node.height != h+1):
                 node = node.leftChild
-            node = node.leftChild
         else:
-            while (node.rightChild.height != h and node.rightChild.height != h+1):
+            while (node.height != h and node.height != h+1):
                 node = node.rightChild
-            node = node.rightChild
-        x_key = smaller_tree.find_biggest(smaller_tree.rootNode)
+        x_key = smaller_tree.find_biggest(smaller_tree.rootNode).key
         smaller_tree.remove(x_key)
         newroot = Node(x_key)
         newroot.leftChild = smaller_tree.rootNode
@@ -582,9 +583,10 @@ def is_reachable(u,v):
 
 if __name__ == "__main__":    
     nodes = int(input())
-    avl=[]
+# keep a map of root-node to AVLTree 
+    avl={}
     for i in range(nodes):
-        avl.append(AVLTree([i]))
+        avl[i] = AVLTree([i])
     for lines in sys.stdin :
         l = lines.split(' ')
         fn = l[0]
