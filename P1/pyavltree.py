@@ -519,8 +519,8 @@ class AVLTree():
     def special_merge(self, tree):
         taller_tree = tree if tree.height > self.height else self
         shorter_tree = tree if taller_tree == self else self
-        bigger_tree = tree if tree.rootNode.key > self.rootNode.key else self
-        smaller_tree = tree if bigger_tree == self else self
+        bigger_tree = tree
+        smaller_tree = self
         h = shorter_tree.height()
         node = taller_tree.rootNode
         #if node.height == h or node.height == h+1:
@@ -545,7 +545,7 @@ class AVLTree():
 
 # special merge :: avl -> avl -> avl 
 def special_merge(avl1,avl2): # all elements in avl1 < all elements in avl2 . In O(log n)
-    pass
+    avl1.special_merge(avl2)
 
 # split :: avl -> node -> (avl,avl)
 def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
@@ -565,7 +565,11 @@ def multi_add_weight(u,v,d):
 
 # reverse path 
 def reverse_path(u):
-    pass
+    node = u
+    while node.parent is not None:
+        node = node.parent
+    node.revBit = 1 if node.revBit == 0 else 0
+
 
 # report_min
 def report_min(u,v):
