@@ -519,7 +519,6 @@ class AVLTree():
                 self.rebalance(node)
 
     def special_merge(self, tree):
-        pdb.set_trace()
         taller_tree = tree if tree.height() >= self.height() else self
         shorter_tree = tree if taller_tree == self else self
         bigger_tree = tree
