@@ -534,7 +534,8 @@ class AVLTree():
             while (node.height != h and node.height != h+1):
                 node = node.rightChild
         x_key = smaller_tree.find_biggest(smaller_tree.rootNode).key
-        smaller_tree.remove(x_key)
+        # dont delete any node
+        #smaller_tree.remove(x_key)
         newroot = Node(x_key)
         newroot.leftChild = smaller_tree.rootNode
         newroot.rightChild = node
@@ -553,7 +554,14 @@ def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st 
 
 # link 
 def link(u,v,w):
-    pass
+    uNode = nodes[u-1]
+    vNode = nodes[v-1]
+    newTree = special_merge(avl[u], avl[v])
+    
+    # delete older trees
+
+
+    avl[newTree.rootNode] = newTree
 
 # cut 
 def cut(u,v):
@@ -565,7 +573,7 @@ def multi_add_weight(u,v,d):
 
 # reverse path 
 def reverse_path(u):
-    node = u
+    node = nodes[u-1]
     while node.parent is not None:
         node = node.parent
     node.revBit = 1 if node.revBit == 0 else 0
@@ -583,9 +591,11 @@ def is_reachable(u,v):
 if __name__ == "__main__":    
     nodes = int(input())
 # keep a map of root-node to AVLTree 
-    avl={}
+    avl = {}
+    nodes = []
     for i in range(nodes):
-        avl[i] = AVLTree([i])
+        nodes.append(Node(i+1))
+        avl[i+1] = AVLTree([i+1])
     for lines in sys.stdin :
         l = lines.split(' ')
         fn = l[0]
