@@ -9,14 +9,22 @@ seq3 = [x for x in range(60,1000)]
 seq4 = [1]
 seq5 = [2]
 
-b = AVLTree(seq0)
-c = AVLTree(seq1)
-d = AVLTree(seq2)
-e = AVLTree(seq3)
+n = 100
+#b = AVLTree(seq0)
+#c = AVLTree(seq1)
+#d = AVLTree(seq2)
+#e = AVLTree(seq3)
 
-x = AVLTree(seq4)
-y = AVLTree(seq5)
+#x = AVLTree(seq4)
+#y = AVLTree(seq5)
+for i in range(n):
+    nodes.append(Node(i+1))
 
+for i in range(1000):
+    a = random.randint(1,n)
+    b = random.randint(1,n)
+    print "link("+str(a)+", "+str(b)+", 0)\n"
+    link(a, b, 0)
 #f = d.special_merge(b)
 #f.toPNG("f.png")
 
