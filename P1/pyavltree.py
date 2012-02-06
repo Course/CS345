@@ -18,7 +18,18 @@ class Node():
         self.addFactor = 0
         self.revBit = 0
         self.height = 0 
-    
+
+    def reset(self):
+        self.parent = None
+        self.leftChild = None
+        self.leftWeight = None
+        self.rightChild = None
+        self.rightWeight = None
+        self.minWeight = None
+        self.addFactor = 0
+        self.revBit = 0
+        self.height = 0 
+ 
     def __repr__(self):
         return str(self.key) + "(" + str(self.height) + ")"
     
@@ -247,126 +258,69 @@ class Node():
         else:  # key is equal to node key
             return node
     
-    #def remove (self, key):
-        ## first find
-        #node = self.find(key)
-        
-        #if not node is None:
-            #self.elements_count -= 1
-            
-            ##     There are three cases:
-            ## 
-            ##     1) The node is a leaf.  Remove it and return.
-            ## 
-            ##     2) The node is a branch (has only 1 child). Make the pointer to this node 
-            ##        point to the child of this node.
-            ## 
-            ##     3) The node has two children. Swap items with the successor
-            ##        of the node (the smallest item in its right subtree) and
-            ##        delete the successor from the right subtree of the node.
-            #if node.is_leaf():
-                #self.remove_leaf(node)
-            #elif (bool(node.leftChild)) ^ (bool(node.rightChild)):  
-                #self.remove_branch (node)
-            #else:
-                #assert (node.leftChild) and (node.rightChild)
+    def remove (self):
+            #     There are three cases:
+            # 
+            #     1) The node is a leaf.  Remove it and return.
+            # 
+            #     2) The node is a branch (has only 1 child). Make the pointer to this node 
+            #        point to the child of this node.
+            # 
+            #     3) The node has two children. Swap items with the successor
+            #        of the node (the smallest item in its right subtree) and
+            #        delete the successor from the right subtree of the node.
+            if self.is_leaf():
+                self.remove_leaf()
+            elif (bool(self.leftChild)) ^ (bool(self.rightChild)):  
+                self.remove_branch ()
+            else:
+                #remove this clause
                 #self.swap_with_successor_and_remove (node)
+                pass
             
-    #def remove_leaf (self, node):
-        #parent = node.parent
-        #if (parent):
-            #if parent.leftChild == node:
-                #parent.leftChild = None
-            #else:
-                #assert (parent.rightChild == node)
-                #parent.rightChild = None
-            #self.recompute_heights(parent)
-        #else:
-            #self.rootNode = None
-        #del node
-        ## rebalance
-        #node = parent
-        #while (node):
-            #if not node.balance() in [-1, 0, 1]:
-                #self.rebalance(node)
-            #node = node.parent
+    def remove_leaf (self):
+        node = self
+        parent = node.parent
+        if (parent):
+            if parent.leftChild == node:
+                parent.leftChild = None
+            else:
+                assert (parent.rightChild == node)
+                parent.rightChild = None
+            recompute_heights(parent)
+        self.reset()
+        # rebalance
+        node = parent
+        while (node):
+            if not node.balance() in [-1, 0, 1]:
+                node.rebalance()
+            node = node.parent
         
         
-    #def remove_branch (self, node):
-        #parent = node.parent
-        #if (parent):
-            #if parent.leftChild == node:
-                #parent.leftChild = node.rightChild or node.leftChild
-            #else:
-                #assert (parent.rightChild == node)
-                #parent.rightChild = node.rightChild or node.leftChild
-            #if node.leftChild:
-                #node.leftChild.parent = parent
-            #else:
-                #assert (node.rightChild)
-                #node.rightChild.parent = parent 
-            #self.recompute_heights(parent)
-        #del node
-        ## rebalance
-        #node = parent
-        #while (node):
-            #if not node.balance() in [-1, 0, 1]:
-                #self.rebalance(node)
-            #node = node.parent
+    def remove_branch (self):
+        node = self
+        parent = node.parent
+        if (parent):
+            if parent.leftChild == node:
+                parent.leftChild = node.rightChild or node.leftChild
+            else:
+                assert (parent.rightChild == node)
+                parent.rightChild = node.rightChild or node.leftChild
+            if node.leftChild:
+                node.leftChild.parent = parent
+            else:
+                assert (node.rightChild)
+                node.rightChild.parent = parent 
+            recompute_heights(parent)
+        #delete node
+        self.reset()
+        # rebalance
+        node = parent
+        while (node):
+            if not node.balance() in [-1, 0, 1]:
+                node.rebalance()
+            node = node.parent
         
-    #def swap_with_successor_and_remove (self, node):
-        #successor = self.find_smallest(node.rightChild)
-        #self.swap_nodes (node, successor)
-        #assert (node.leftChild is None)
-        #if node.height == 0:
-            #self.remove_leaf (node)
-        #else:
-            #self.remove_branch (node)
-            
-    #def swap_nodes (self, node1, node2):
-        #assert (node1.height > node2.height)
-        #parent1 = node1.parent
-        #leftChild1 = node1.leftChild
-        #rightChild1 = node1.rightChild
-        #parent2 = node2.parent
-        #assert (not parent2 is None)
-        #assert (parent2.leftChild == node2 or parent2 == node1)
-        #leftChild2 = node2.leftChild
-        #assert (leftChild2 is None)
-        #rightChild2 = node2.rightChild
-        
-        ## swap heights
-        #tmp = node1.height 
-        #node1.height = node2.height
-        #node2.height = tmp
-       
-        #if parent1:
-            #if parent1.leftChild == node1:
-                #parent1.leftChild = node2
-            #else:
-                #assert (parent1.rightChild == node1)
-                #parent1.rightChild = node2
-            #node2.parent = parent1
-        #else:
-            #self.rootNode = node2
-            #node2.parent = None
-            
-        #node2.leftChild = leftChild1
-        #leftChild1.parent = node2
-        #node1.leftChild = leftChild2 # None
-        #node1.rightChild = rightChild2
-        #if rightChild2:
-            #rightChild2.parent = node1 
-        #if not (parent2 == node1):
-            #node2.rightChild = rightChild1
-            #rightChild1.parent = node2
-            
-            #parent2.leftChild = node1
-            #node1.parent = parent2
-        #else:
-            #node2.rightChild = node1
-            #node1.parent = node2           
-    
     # save the tree into a png image
     # filename should be "name.png"
     def toPNG(self, filename):
@@ -503,17 +457,10 @@ def special_merge(root1, root2):
         if xNode == smaller_tree:
             smaller_tree = None
         else:
-            xNode.parent.rightChild = None
-            recompute_heights(xNode.parent)
-            n = xNode.parent
-            while (n):
-                if not n.balance() in [-1, 0, 1]:
-                    n.rebalance()
-                n = n.parent
-            #recompute_heights(xNode.parent)
-            xNode.parent = None
-            xNode.leftChild = smaller_tree
-            smaller_tree.parent = xNode
+            xNode.remove()
+            smaller_root = smaller_tree.get_root() #while rebalancing during removal , root may change
+            xNode.leftChild = smaller_root
+            smaller_root.parent = xNode
         xNode.rightChild = node
         recompute_heights(xNode)
     else:
@@ -523,17 +470,10 @@ def special_merge(root1, root2):
         if xNode == bigger_tree:
             bigger_tree = None
         else:
-            xNode.parent.leftChild = None
-            recompute_heights(xNode.parent)
-            n = xNode.parent
-            while (n):
-                if not n.balance() in [-1, 0, 1]:
-                    n.rebalance()
-                n = n.parent
-            #recompute_heights(xNode.parent)
-            xNode.parent = None
-            xNode.rightChild = bigger_tree
-            bigger_tree.parent = xNode
+            xNode.remove()
+            bigger_root = bigger_tree.get_root()
+            xNode.rightChild = bigger_root
+            bigger_root.parent = xNode
         xNode.leftChild = node
         recompute_heights(xNode)
     xNode.parent = None
@@ -554,8 +494,8 @@ def link(u,v,w):
     vNode = nodes[v-1]
     uRoot = uNode.get_root()
     print_link(uNode.get_root())
-    uNode.get_root().toPNG("u.png")
-    vNode.get_root().toPNG("v.png")
+    #uNode.get_root().toPNG("u.png")
+    #vNode.get_root().toPNG("v.png")
     print_link(vNode.get_root())
     vRoot = vNode.get_root()
     if uRoot == vRoot:
@@ -563,7 +503,7 @@ def link(u,v,w):
     else:
         special_merge(uRoot, vRoot)
         print_link(uNode.get_root())
-        uNode.get_root().toPNG("r.png")
+        #uNode.get_root().toPNG("r.png")
         sanity_check(uNode.get_root())
 
 def print_link(root):
