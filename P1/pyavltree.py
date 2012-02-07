@@ -1,4 +1,5 @@
 #!/bin/python
+from __future__ import print_function
 import random, math
 import sys
 import pdb
@@ -6,25 +7,40 @@ def random_data_generator (max_r):
     for i in xrange(max_r):
         yield random.randint(0, max_r)
 
+class Vertex():
+    def __init__(self,key):
+        self.key = key
+        self.inedge = None
+        self.outedge = None
+
+    def get_edge(self):
+        if self.outedge is not None:
+            return self.outedge
+        elif self.inedge is not None:
+            return self.inedge
+        else:
+            return None
+
+
 class Node():
     def __init__(self, key):
         self.key = key
+        self.tail = None
+        self.head = None
         self.parent = None
         self.leftChild = None
-        self.leftWeight = None
         self.rightChild = None
-        self.rightWeight = None
         self.minWeight = None
         self.addFactor = 0
         self.revBit = 0
         self.height = 0 
 
     def reset(self):
+        self.tail = None
+        self.head = None
         self.parent = None
         self.leftChild = None
-        self.leftWeight = None
         self.rightChild = None
-        self.rightWeight = None
         self.minWeight = None
         self.addFactor = 0
         self.revBit = 0
@@ -374,7 +390,7 @@ def inorder(node, retlst = None):
             retlst = [] 
         if node.leftChild:
             retlst = inorder(node.leftChild, retlst)
-        retlst += [node.key] 
+        retlst += [node] 
         if node.rightChild:
             retlst = inorder(node.rightChild, retlst)
         return retlst
@@ -431,7 +447,7 @@ def replace_sub_tree(old_root, new_root):
         new_root.parent = parent
         recompute_heights(parent)
     else:
-        print "Cannot reach here"
+        print ("Cannot reach here")
     old_root.parent = new_root
     recompute_heights(new_root)
     if not new_root.balance() in [-1, 0, 1]:
@@ -440,7 +456,7 @@ def replace_sub_tree(old_root, new_root):
         if not node.balance () in [-1, 0, 1]:
             node.rebalance()
 
-def special_merge(root1, root2):
+def special_merge(root1, root2, xNode):
     #pdb.set_trace()
     taller_tree = root2 if root2.height >= root1.height else root1
     shorter_tree = root2 if taller_tree == root1 else root1
@@ -448,34 +464,29 @@ def special_merge(root1, root2):
     smaller_tree = root1
     h = shorter_tree.height
     node = taller_tree
+    xNode.tail = smaller_tree.find_biggest().head
+    xNode.head = bigger_tree.find_smallest().tail
+    smaller_tree.find_biggest().head.outedge = xNode
+    bigger_tree.find_smallest().tail.inedge = xNode
+    xNode.parent = None
     #if node.height == h or node.height == h+1:
     #    pass
     if taller_tree == bigger_tree:
         while (node.height != h and node.height != h+1):
             node = node.leftChild
-        xNode = smaller_tree.find_biggest()
-        if xNode == smaller_tree:
-            smaller_tree = None
-        else:
-            xNode.remove()
-            smaller_root = smaller_tree.get_root() #while rebalancing during removal , root may change
-            xNode.leftChild = smaller_root
-            smaller_root.parent = xNode
+        smaller_root = smaller_tree #while rebalancing during removal , root may change
+        xNode.leftChild = smaller_root
+        smaller_root.parent = xNode
         xNode.rightChild = node
-        recompute_heights(xNode)
+        #recompute_heights(xNode)
     else:
         while (node.height != h and node.height != h+1):
             node = node.rightChild
-        xNode = bigger_tree.find_smallest()
-        if xNode == bigger_tree:
-            bigger_tree = None
-        else:
-            xNode.remove()
-            bigger_root = bigger_tree.get_root()
-            xNode.rightChild = bigger_root
-            bigger_root.parent = xNode
+        bigger_root = bigger_tree
+        xNode.rightChild = bigger_root
+        bigger_root.parent = xNode
         xNode.leftChild = node
-        recompute_heights(xNode)
+        #recompute_heights(xNode)
     xNode.parent = None
     #xNode.height = xNode.max_children_height() + 1
     replace_sub_tree(node, xNode)
@@ -487,27 +498,92 @@ def special_merge(root1, root2):
 def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
     pass
 
+
 # link 
 def link(u,v,w):
     global nodes
-    uNode = nodes[u-1]
-    vNode = nodes[v-1]
-    uRoot = uNode.get_root()
-    print_link(uNode.get_root())
+    uVertex = nodes[u-1]
+    vVertex = nodes[v-1]
+    #print_path(uVertex)
+    #print_path(vVertex)
+    uEdge = uVertex.get_edge()
+    vEdge = vVertex.get_edge()
+    if uEdge is None:
+        if vEdge is None:
+            edge = Node(w)
+            edge.tail = uVertex
+            edge.head = vVertex
+            uVertex.outedge = edge
+            vVertex.inedge = edge
+        else:
+            edge = Node(w)
+            vRoot = vEdge.get_root()
+            edge.tail = uVertex
+            uVertex.outedge = edge
+            smallest_edge = vRoot.find_smallest()
+            edge.head = smallest_edge.tail
+            smallest_edge.tail.inedge = edge
+            assert(smallest_edge.leftChild == None)
+            smallest_edge.leftChild = edge
+            edge.parent = smallest_edge
+            recompute_heights(smallest_edge)
+            if not smallest_edge.balance() in [-1,0,1]:
+                smallest_edge.rebalance()
+            for node in smallest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                    node.rebalance()
+    else:
+        if vEdge is None:
+            edge = Node(w)
+            uRoot = uEdge.get_root()
+            biggest_edge = uRoot.find_biggest()
+            edge.tail = biggest_edge.head
+            edge.head = vVertex
+            vVertex.inedge = edge
+            biggest_edge.head.outedge = edge
+            assert( biggest_edge.rightChild == None)
+            biggest_edge.rightChild = edge
+            edge.parent = biggest_edge
+            recompute_heights(biggest_edge)
+            if not biggest_edge.balance() in [-1,0,1]:
+                biggest_edge.rebalance()
+            for node in biggest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                  node.rebalance()
+        else:
+            # both uEdge and vEdge are not None
+            if uEdge.get_root() == vEdge.get_root():
+                pass
+            else:
+                edge = Node(w)
+                uEdge.get_root().toPNG("u.png")
+                vEdge.get_root().toPNG("v.png")
+                special_merge(uEdge.get_root(),vEdge.get_root(), edge)
+    #print_path(uVertex)
     #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
-    print_link(vNode.get_root())
-    vRoot = vNode.get_root()
-    if uRoot == vRoot:
-        pass
-    else:
-        special_merge(uRoot, vRoot)
-        print_link(uNode.get_root())
-        #uNode.get_root().toPNG("r.png")
-        sanity_check(uNode.get_root())
+    #print_link(vNode.get_root())
+    #vRoot = vNode.get_root()
+    #if uRoot == vRoot:
+        #pass
+    #else:
+        #special_merge(uRoot, vRoot)
+        #print_link(uNode.get_root())
+        ##uNode.get_root().toPNG("r.png")
+        #sanity_check(uNode.get_root())
 
-def print_link(root):
-    print inorder(root)
+
+def print_path(vertex):
+    edge = vertex.get_edge()
+    if edge is None:
+        print(str(vertex.key)+"\n")
+    else:
+        root = edge.get_root()
+        edge_list = inorder(root)
+        for edge in edge_list:
+            print (str(edge.tail.key) + "---" + str(edge.key) + "--->",end=" ")
+        last_edge = edge_list.pop()
+        print(str(last_edge.head.key)+"\n")
 
 # cut 
 def cut(u,v):
@@ -536,53 +612,27 @@ def is_reachable(u,v):
     
 nodes = []
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     noofnodes = int(input())
-    nodes = []
     for i in range(noofnodes):
-        nodes.append(Node(i+1))
+        nodes.append(Vertex(i+1))
     for lines in sys.stdin :
         l = lines.split(' ')
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
-            link(arg[0],arg[1],arg[2])
+            link(avl[arg[0]-1],avl[arg[1]-1],arg[2])
         elif fn=='C':
-            cut(arg[0],arg[1])
+            cut(avl[arg[0]-1],avl[arg[1]-1])
         elif fn=='A':
-            multi_add_weight(arg[0],arg[1],arg[2])
+            multi_add_weight(avl[arg[0]-1],avl[arg[1]-1],arg[2])
         elif fn=='R':
-            reverse_path(arg[0])
+            reverse_path(avl[arg[0]-1])
         elif fn=='M':
-            report_min(arg[0],arg[1])
+            report_min(avl[arg[0]-1],avl[arg[1]-1])
         elif fn=='I':
-            is_reachable(arg[0],arg[1])
+            is_reachable(avl[arg[0]-1],avl[arg[1]-1])
         else:
             print ("Unrecognised input")
             break
-    #"""check empty tree creation"""
-    #a = AVLTree ()
-    #a.sanity_check()    
-    #"""check not empty tree creation"""
-    #seq = [1,2,3,4,5,6,7,8,9,10,11,12]
-    #seq_copy = [1,2,3,4,5,6,7,8,9,10,11,12]
-    ##random.shuffle(seq)
-    #b = AVLTree (seq)
-    #b.sanity_check()
-    #"""check that inorder traversal on an AVL tree 
-    #(and on a binary search tree in the whole) 
-    #will return values from the underlying set in order"""
-    #assert (b.as_list(3) == b.as_list(1) == seq_copy)
-    
-    #"""check that node deletion works"""
-    #c = AVLTree (random_data_generator (10000))
-    #before_deletion = c.elements_count
-    #for i in random_data_generator (1000):
-        #c.remove(i)
-    #after_deletion = c.elements_count
-    #c.sanity_check()
-    #assert (before_deletion >= after_deletion)
-    ##print c.out()
-    #"""check that an AVL tree's height is strictly less than 
-    #1.44*log2(N+2)-1 (there N is number of elements)"""
-    #assert (c.height() < 1.44 * math.log(after_deletion+2, 2) - 1)
+

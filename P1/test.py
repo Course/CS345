@@ -18,13 +18,14 @@ n = 100
 #x = AVLTree(seq4)
 #y = AVLTree(seq5)
 for i in range(n):
-    nodes.append(Node(i+1))
+    nodes.append(Vertex(i+1))
 
 for i in range(1000):
     a = random.randint(1,n)
     b = random.randint(1,n)
-    print "link("+str(a)+", "+str(b)+", 0)\n"
-    link(a, b, 0)
+    c = random.randint(1,n)
+    #print "link("+str(a)+", "+str(b)+", "+str(c)+")\n"
+    link(a, b, c)
 #f = d.special_merge(b)
 #f.toPNG("f.png")
 
