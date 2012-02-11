@@ -13,6 +13,9 @@ class Vertex():
         self.inedge = None
         self.outedge = None
 
+    def __repr__(self):
+        return str(self.key) + "(" + str(self.inedge)  + "," + str(self.outedge) + ")"
+
     def get_edge(self):
         if self.outedge is not None:
             return self.outedge
@@ -556,8 +559,8 @@ def link(u,v,w):
                 pass
             else:
                 edge = Node(w)
-                uEdge.get_root().toPNG("u.png")
-                vEdge.get_root().toPNG("v.png")
+                #uEdge.get_root().toPNG("u.jpeg")
+                #vEdge.get_root().toPNG("v.jpeg")
                 special_merge(uEdge.get_root(),vEdge.get_root(), edge)
     #print_path(uVertex)
     #uNode.get_root().toPNG("u.png")
