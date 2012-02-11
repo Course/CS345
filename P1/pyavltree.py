@@ -590,7 +590,23 @@ def print_path(vertex):
 
 # cut 
 def cut(u,v):
-    pass
+    global nodes
+    uVertex = nodes[u-1]
+    vVertex = nodes[v-1]
+    #print_path(uVertex)
+    #print_path(vVertex)
+    uEdge = uVertex.outedge
+    vEdge = vVertex.inedge
+    assert(uEdge is not None)
+    assert(vEdge is not None)
+    if uEdge != vEdge:
+        return "No edge between u and v"
+    else:
+        assert(uEdge.get_root() == vEdge.get_root)
+        split(uEdge.get_root(), uEdge)
+
+
+
 
 # multiadd 
 def multi_add_weight(u,v,d):
