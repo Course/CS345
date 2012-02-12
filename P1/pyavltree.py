@@ -581,50 +581,77 @@ def special_merge(root1, root2, xNode):
 
     # dont delete any node
 
+def rbset(node):
+    if revBit == 0 :
+        return node 
+    else: 
+        h = node.head 
+        t = node.tail 
+        node.head = t 
+        node.tail = h 
+        node.head.inedge = node 
+        node.tail.outedge = node 
+        node.revBit = 0 
+        return node 
+def rbinv(node):
+    if node.revBit == 1 :
+        node.revBit =0 
+    else :
+        node.revBit =1 
+
 # split :: avl -> node -> (avl,avl)
-def split(root,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
+def split(root,path,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
     currentNode = root
-    assert(root.find(node.key) == node)
-    smaller_tree = None
-    bigger_tree = None
-    while currentNode.key != node.key:
-        leftChild = currentNode.leftChild
-        rightChild = currentNode.rightChild
-        if currentNode.leftChild is not None:
-            currentNode.leftChild.parent = None
-        if currentNode.rightChild is not None:
-            currentNode.rightChild.parent = None
-        currentNode.leftChild = None
-        currentNode.rightChild = None
-        currentNode.height = 0
-        if currentNode.key < node.key:
-            smaller_tree = merge(smaller_tree, leftChild)
-            smaller_tree = merge(smaller_tree, currentNode)
-            currentNode = rightChild
-        else:
-            assert (currentNode.key > node.key)
-            bigger_tree = merge(rightChild, bigger_tree)
-            bigger_tree = merge(currentNode, bigger_tree)
-            currentNode = leftChild
-    assert(currentNode.key == node.key)
-    assert(currentNode == node)
-    leftChild = currentNode.leftChild
-    rightChild = currentNode.rightChild
-    if currentNode.leftChild is not None:
-        currentNode.leftChild.parent = None
-    if currentNode.rightChild is not None:
-        currentNode.rightChild.parent = None
-    currentNode.leftChild = None
-    currentNode.rightChild = None
-    if leftChild is not None:
-        smaller_tree = merge(smaller_tree,leftChild)
-    if rightChild is not None:
-        bigger_tree = merge(rightChild, bigger_tree)
-    currentNode.parent = None
-
-
-
-
+    #assert(root.find(node.key) == node)
+    counter = 0
+    xorr  = 0 
+    smtree= None
+    smmid = None 
+    bgtree = None
+    bgmid = None 
+    for d in path:
+        xorr = xor(xorr,currentNode.revBit)
+        if xorr == 0:
+            if d == 'L':
+                if bgtree:
+                    bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
+                    bgmid = rbset(currentNode)
+                else :
+                    bgtree = currentNode.rightChild
+                    bgmid = rbset(currentNode)
+                currentNode = currentNode.leftChild
+            else : 
+                if smtree:
+                    smtree = special_merge(smtree,currentNode.leftChild,smmid)
+                    smmid = rbset(currentNode)
+                else :
+                    smtree = currentNode.leftChild
+                    smmid = rbset(currentNode)
+                currentNode = currentNode.rightChild
+        else :
+            if d == 'L':
+                if bgtree:
+                    smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+                    smmid = rbset(currentNode)
+                else :
+                    smtree = rbinv(currentNode.rightChild)
+                    smmid = rbset(currentNode)
+                currentNode = currentNode.leftChild
+            else : 
+                if bgtree:
+                    bgtree = special_merge(rbinv(currentNode.leftChild),bgtrees,bgmid)
+                    bgmid = rbset(currentNode)
+                else :
+                    bgtree = rbinv(currentNode.leftChild)
+                    bgmid = rbset(currentNode)
+                currentNode = currentNode.rightChild
+    xorr = xor(xorr,currentNode.revBit)
+    if xorr == 0:
+        bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
+        smtree = special_merge(smtree,currentNode.leftChild,smmid)
+    else :
+        bgtree = special_merge(rbinv(currentNode.leftChild),bgtrees,bgmid)
+        smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
 
 # link 
 def link(u,v,w):
@@ -798,6 +825,7 @@ def give_path(u):
             path.append('L')
         else :
             path.append('R')
+    return (reversed(path))
 
     return (node,path)
 def xor(a,b):
