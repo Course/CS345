@@ -775,7 +775,8 @@ def cut(u,v):
         #sanity_check(vVertex.outedge.get_root())
         #sanity_check(uVertex.inedge.get_root())
         #sanity_check(vVertex.outedge.get_root())
-        split(uEdge.get_root(), uEdge)
+        (rt,path)=give_path(uEdge)
+        split(rt,path, uEdge)
         uEdge.tail = None
         uEdge.head = None
         uVertex.outedge = None
@@ -825,7 +826,7 @@ def give_path(u):
             path.append('L')
         else :
             path.append('R')
-    return (reversed(path))
+    return (node, reversed(path))
 
     return (node,path)
 def xor(a,b):
