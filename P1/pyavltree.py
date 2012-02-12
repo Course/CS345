@@ -64,6 +64,17 @@ class Node():
             return self.rightChild.height
         else:
             return -1
+    def left(self,x):
+        if x==0:
+            return self.leftChild
+        else :
+            return self.rightChild
+
+    def right(self,x):
+        if x==0:
+            return self.rightChild 
+        else :
+            return self.leftChild
 
     def is_left_child(self):
         return (self.parent.leftChild == self)
@@ -193,17 +204,21 @@ class Node():
     
     def find_biggest(self):
         start_node = self
+        xorr = start_node.revBit
         node = start_node
-        while node.rightChild:
-            node = node.rightChild
-        return node 
+        while node.right(xorr):
+            node = node.right(xorr)
+            xorr = xor(xorr, node.revBit)
+        return (node , xorr)
     
     def find_smallest(self):
         start_node = self
+        xorr = start_node.revBit
         node = start_node
-        while node.leftChild:
-            node = node.leftChild
-        return node
+        while node.left(xorr):
+            node = node.left(xorr)
+            xorr = xor(xorr, node.revBit)
+        return (node, xorr)
      
     #def inorder_non_recursive (self):
         #node = self
@@ -263,7 +278,8 @@ class Node():
             #return self.postorder (self.rootNode)
         #elif pre_in_post == 3:
             #return self.inorder_non_recursive()      
-          
+    
+#BUG HERE
     def find(self, key):
         return self.find_in_subtree (self, key )
     
@@ -388,15 +404,22 @@ def recompute_heights (start_from_node):
             changed = node.height != old_height
             node = node.parent
 
-def inorder(node, retlst = None):
-        if retlst is None:
-            retlst = [] 
-        if node.leftChild:
-            retlst = inorder(node.leftChild, retlst)
-        retlst += [node] 
-        if node.rightChild:
-            retlst = inorder(node.rightChild, retlst)
-        return retlst
+def inorder(node, xorr = 0, retlst = None):
+        if node is None:
+            return
+        xorr = xor(xorr, node.revBit)
+        if xorr == 0:
+            if node.leftChild:
+                inorder(node.left(xorr), xorr, retlst)
+            print (str(node.tail.key) + "---" + str(node.key) + "--->" + str(node.head.key) + "_" , end=" ")
+            if node.rightChild:
+                inorder(node.right(xorr), xorr, retlst)
+        else:
+            if node.rightChild:
+                inorder(node.rightChild, xorr, retlst)
+            print (str(node.head.key) + "---" + str(node.key) + "--->" + str(node.tail.key) + "_" , end=" ")
+            if node.leftChild:
+                inorder(node.leftChild, xorr, retlst)
 
 def sanity_check (start_node, *args):
         if len(args) == 0:
@@ -459,6 +482,52 @@ def replace_sub_tree(old_root, new_root):
         if not node.balance () in [-1, 0, 1]:
             node.rebalance()
 
+def merge(root1, root2):
+    #pdb.set_trace()
+    if root1 is None:
+        return root2
+    if root2 is None:
+        return root1
+    taller_tree = root2 if root2.height >= root1.height else root1
+    shorter_tree = root2 if taller_tree == root1 else root1
+    bigger_tree = root2 
+    smaller_tree = root1
+    h = shorter_tree.height
+    node = taller_tree
+    #if node.height == h or node.height == h+1:
+    #    pass
+    if taller_tree == bigger_tree:
+        while (node.height != h and node.height != h+1):
+            node = node.leftChild
+        xNode = smaller_tree.find_biggest()
+        if xNode == smaller_tree:
+            smaller_tree = None
+        else:
+            xNode.remove()
+            smaller_root = smaller_tree.get_root() #while rebalancing during removal , root may change
+            xNode.leftChild = smaller_root
+            smaller_root.parent = xNode
+        xNode.rightChild = node
+        recompute_heights(xNode)
+    else:
+        while (node.height != h and node.height != h+1):
+            node = node.rightChild
+        xNode = bigger_tree.find_smallest()
+        if xNode == bigger_tree:
+            bigger_tree = None
+        else:
+            xNode.remove()
+            bigger_root = bigger_tree.get_root()
+            xNode.rightChild = bigger_root
+            bigger_root.parent = xNode
+        xNode.leftChild = node
+        recompute_heights(xNode)
+    xNode.parent = None
+    #xNode.height = xNode.max_children_height() + 1
+    replace_sub_tree(node, xNode)
+    return taller_tree.get_root()
+#return root of the merged tree
+
 def special_merge(root1, root2, xNode):
     #pdb.set_trace()
     taller_tree = root2 if root2.height >= root1.height else root1
@@ -467,16 +536,28 @@ def special_merge(root1, root2, xNode):
     smaller_tree = root1
     h = shorter_tree.height
     node = taller_tree
-    xNode.tail = smaller_tree.find_biggest().head
-    xNode.head = bigger_tree.find_smallest().tail
-    smaller_tree.find_biggest().head.outedge = xNode
-    bigger_tree.find_smallest().tail.inedge = xNode
+    xorr = 0
+    (b1,x1) = smaller_tree.find_biggest()
+    (b2,x2) = bigger_tree.find_smallest()
+    if x1 == 0:
+        xNode.tail = b1.head 
+        b1.head.outedge = xNode 
+    else:
+        xNode.tail = b1.tail
+        b1.tail.outedge = xNode
+    if x2 == 0:
+        xNode.head = b2.tail
+        b2.tail.inedge = xNode
+    else:
+        xNode.head = b2.head
+        b2.head.inedge = xNode
     xNode.parent = None
     #if node.height == h or node.height == h+1:
     #    pass
     if taller_tree == bigger_tree:
         while (node.height != h and node.height != h+1):
-            node = node.leftChild
+            xorr = xor(xorr,node.revBit)
+            node = node.left(xorr)
         smaller_root = smaller_tree #while rebalancing during removal , root may change
         xNode.leftChild = smaller_root
         smaller_root.parent = xNode
@@ -484,13 +565,16 @@ def special_merge(root1, root2, xNode):
         #recompute_heights(xNode)
     else:
         while (node.height != h and node.height != h+1):
-            node = node.rightChild
+            xorr = xor(xorr,node.revBit)
+            node = node.right(xorr)
         bigger_root = bigger_tree
         xNode.rightChild = bigger_root
         bigger_root.parent = xNode
         xNode.leftChild = node
         #recompute_heights(xNode)
     xNode.parent = None
+    xNode.revBit = xorr
+    node.revBit = (0 if node.revBit == 1 else 0) if xorr == 1 else node.revBit
     #xNode.height = xNode.max_children_height() + 1
     replace_sub_tree(node, xNode)
     #node.parent = xNode
@@ -498,8 +582,48 @@ def special_merge(root1, root2, xNode):
     # dont delete any node
 
 # split :: avl -> node -> (avl,avl)
-def split(avl,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
-    pass
+def split(root,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
+    currentNode = root
+    assert(root.find(node.key) == node)
+    smaller_tree = None
+    bigger_tree = None
+    while currentNode.key != node.key:
+        leftChild = currentNode.leftChild
+        rightChild = currentNode.rightChild
+        if currentNode.leftChild is not None:
+            currentNode.leftChild.parent = None
+        if currentNode.rightChild is not None:
+            currentNode.rightChild.parent = None
+        currentNode.leftChild = None
+        currentNode.rightChild = None
+        currentNode.height = 0
+        if currentNode.key < node.key:
+            smaller_tree = merge(smaller_tree, leftChild)
+            smaller_tree = merge(smaller_tree, currentNode)
+            currentNode = rightChild
+        else:
+            assert (currentNode.key > node.key)
+            bigger_tree = merge(rightChild, bigger_tree)
+            bigger_tree = merge(currentNode, bigger_tree)
+            currentNode = leftChild
+    assert(currentNode.key == node.key)
+    assert(currentNode == node)
+    leftChild = currentNode.leftChild
+    rightChild = currentNode.rightChild
+    if currentNode.leftChild is not None:
+        currentNode.leftChild.parent = None
+    if currentNode.rightChild is not None:
+        currentNode.rightChild.parent = None
+    currentNode.leftChild = None
+    currentNode.rightChild = None
+    if leftChild is not None:
+        smaller_tree = merge(smaller_tree,leftChild)
+    if rightChild is not None:
+        bigger_tree = merge(rightChild, bigger_tree)
+    currentNode.parent = None
+
+
+
 
 
 # link 
@@ -507,8 +631,10 @@ def link(u,v,w):
     global nodes
     uVertex = nodes[u-1]
     vVertex = nodes[v-1]
-    #print_path(uVertex)
-    #print_path(vVertex)
+    if uVertex == vVertex:
+        print ("Cannot link to itself")
+    print_path(u)
+    print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
     if uEdge is None:
@@ -523,11 +649,17 @@ def link(u,v,w):
             vRoot = vEdge.get_root()
             edge.tail = uVertex
             uVertex.outedge = edge
-            smallest_edge = vRoot.find_smallest()
-            edge.head = smallest_edge.tail
-            smallest_edge.tail.inedge = edge
-            assert(smallest_edge.leftChild == None)
-            smallest_edge.leftChild = edge
+            smallest_edge,x2 = vRoot.find_smallest()
+            if x2 == 0:
+                edge.head = smallest_edge.tail
+                smallest_edge.tail.inedge = edge
+                smallest_edge.leftChild = edge
+            else:
+                edge.revBit = x2
+                edge.head = smallest_edge.head
+                smallest_edge.head.outedge = edge
+                smallest_edge.rightChild = edge
+            #assert(smallest_edge.leftChild == None)
             edge.parent = smallest_edge
             recompute_heights(smallest_edge)
             if not smallest_edge.balance() in [-1,0,1]:
@@ -539,13 +671,19 @@ def link(u,v,w):
         if vEdge is None:
             edge = Node(w)
             uRoot = uEdge.get_root()
-            biggest_edge = uRoot.find_biggest()
-            edge.tail = biggest_edge.head
+            biggest_edge,x1 = uRoot.find_biggest()
+            if x1 == 0:
+                edge.tail = biggest_edge.head 
+                biggest_edge.head.outedge =  edge
+                biggest_edge.rightChild = edge
+            else:
+                edge.revBit = x1
+                edge.tail = biggest_edge.tail
+                biggest_edge.tail.inedge = edge
+                biggest_edge.leftChild = edge
             edge.head = vVertex
             vVertex.inedge = edge
-            biggest_edge.head.outedge = edge
-            assert( biggest_edge.rightChild == None)
-            biggest_edge.rightChild = edge
+            #assert( biggest_edge.rightChild == None)
             edge.parent = biggest_edge
             recompute_heights(biggest_edge)
             if not biggest_edge.balance() in [-1,0,1]:
@@ -556,13 +694,15 @@ def link(u,v,w):
         else:
             # both uEdge and vEdge are not None
             if uEdge.get_root() == vEdge.get_root():
-                pass
+                print ("Already linked")
             else:
                 edge = Node(w)
-                #uEdge.get_root().toPNG("u.jpeg")
-                #vEdge.get_root().toPNG("v.jpeg")
+                uEdge.get_root().toPNG("u.jpeg")
+                vEdge.get_root().toPNG("v.jpeg")
                 special_merge(uEdge.get_root(),vEdge.get_root(), edge)
-    #print_path(uVertex)
+                sanity_check(uEdge.get_root())
+                uEdge.get_root().toPNG("r.jpeg")
+    print_path(u)
     #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
     #print_link(vNode.get_root())
@@ -575,18 +715,20 @@ def link(u,v,w):
         ##uNode.get_root().toPNG("r.png")
         #sanity_check(uNode.get_root())
 
-
-def print_path(vertex):
+def print_path(u):
+    global nodes
+    vertex = nodes[u-1]
     edge = vertex.get_edge()
     if edge is None:
         print(str(vertex.key)+"\n")
     else:
         root = edge.get_root()
-        edge_list = inorder(root)
-        for edge in edge_list:
-            print (str(edge.tail.key) + "---" + str(edge.key) + "--->",end=" ")
-        last_edge = edge_list.pop()
-        print(str(last_edge.head.key)+"\n")
+        inorder(root)
+        print("\n")
+        #for edge in edge_list:
+            #print (str(edge.tail.key) + "---" + str(edge.key) + "--->",end=" ")
+        #last_edge = edge_list.pop()
+        #print(str(last_edge.head.key)+"\n")
 
 # cut 
 def cut(u,v):
@@ -602,8 +744,20 @@ def cut(u,v):
     if uEdge != vEdge:
         return "No edge between u and v"
     else:
-        assert(uEdge.get_root() == vEdge.get_root)
+        assert(uEdge.get_root() == vEdge.get_root())
+        #sanity_check(vVertex.outedge.get_root())
+        #sanity_check(uVertex.inedge.get_root())
+        #sanity_check(vVertex.outedge.get_root())
         split(uEdge.get_root(), uEdge)
+        uEdge.tail = None
+        uEdge.head = None
+        uVertex.outedge = None
+        vVertex.inedge = None
+        del uEdge
+        uVertex.inedge.get_root().toPNG("ufinal.png")
+        vVertex.outedge.get_root().toPNG("vfinal.png")
+    #print_path(uVertex)
+    #print_path(vVertex)
 
 
 
@@ -616,9 +770,13 @@ def multi_add_weight(u,v,d):
 def reverse_path(u):
     global nodes
     node = nodes[u-1]
-    while node.parent is not None:
-        node = node.parent
-    node.revBit = 1 if node.revBit == 0 else 0
+    edge = node.get_edge()
+    if edge is None:
+        return
+    while edge.parent is not None:
+        edge = edge.parent
+    edge.revBit = 1 if edge.revBit == 0 else 0
+    print_path(u)
 
 
 # report_min
@@ -628,29 +786,57 @@ def report_min(u,v):
 # is_reachable 
 def is_reachable(u,v):
     pass 
-    
+
+# root and path to root 
+def give_path(u):
+    node = u 
+    path = []
+    while node.parent is not None :
+        temp = node 
+        node = node.parent 
+        if temp == node.leftChild:
+            path.append('L')
+        else :
+            path.append('R')
+
+    return (node,path)
+def xor(a,b):
+    assert((a==0 or a==1) and (b==0 or b==1))
+    if a==1 and b==1:
+        return 0 
+    elif a==1 and b==0:
+        return 1 
+    elif a==0 and b==1:
+        return 1 
+    else :
+        return 0 
+
 nodes = []
 
-if __name__ == "__main__":
-    noofnodes = int(input())
+if True:
+#if __name__ == "__main__":
+    f = open("testcases.txt",'r')
+    noofnodes = int(f.readline())
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
-    for lines in sys.stdin :
+    for t,lines  in enumerate(f):
+        pdb.set_trace()
         l = lines.split(' ')
+        print ("Line no : " + str(t) + "\n")
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
-            link(avl[arg[0]-1],avl[arg[1]-1],arg[2])
+            link(arg[0],arg[1],arg[2])
         elif fn=='C':
-            cut(avl[arg[0]-1],avl[arg[1]-1])
+            cut(arg[0],arg[1])
         elif fn=='A':
-            multi_add_weight(avl[arg[0]-1],avl[arg[1]-1],arg[2])
+            multi_add_weight(arg[0],arg[1],arg[2])
         elif fn=='R':
-            reverse_path(avl[arg[0]-1])
+            reverse_path(arg[0])
         elif fn=='M':
-            report_min(avl[arg[0]-1],avl[arg[1]-1])
+            report_min(arg[0],arg[1])
         elif fn=='I':
-            is_reachable(avl[arg[0]-1],avl[arg[1]-1])
+            is_reachable(arg[0],arg[1])
         else:
             print ("Unrecognised input")
             break
