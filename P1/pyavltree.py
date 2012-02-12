@@ -811,7 +811,81 @@ def reverse_path(u):
 
 
 # report_min
+def lprefix(u,v):
+    i=0
+    lp=[]
+    while(u[i]==v[i]):
+        lp.append(u[i])
+    return (lp,u[i],u[i+1:],v[i],v[i+1:])
+
 def report_min(u,v):
+    ur,up = give_path(u)
+    vr,vp = give_path(v)
+    assert(ur==vr)
+    currentNode = ur 
+    xorr = ur.revBit
+    addf=currentNode.addFactor
+    minw=currentNode.minWeight+currentNode.addFactor
+    (lp,u0,sm,v0,bg)=lprefix(up,vp) 
+    for i in lp:
+        if i=='L':
+            currentNode = currentNode.leftChild
+        else:
+            currentNode = currentNode.rightChild 
+        addf=addf+currentNode.addFactor
+        minw=min(minw,currentNode.minkey+addf)
+        xorr=xor(xorr,currentNode.revBit)
+    cancestor = currentNode
+    if u0=='L':
+        currentNode1 = currentNode.leftChild
+    else:
+        currentNode1 = currentNode.rightChild 
+    xorr1=xor(xorr,currentNode1.revBit)
+    addf1=addf1+currentNode1.addFactor
+    if v0=='L':
+        currentNode2 = currentNode.leftChild
+    else:
+        currentNode2 = currentNode.rightChild 
+    xorr2=xor(xorr,currentNode2.revBit)
+    addf2=addf2+currentNode2.addFactor
+    for i in sm:
+        minw=min(minw,currentnode.key+addf1)
+        if i=='l':
+            if xorr==0:
+                minw=min(minw,currentnode.rightchild.minweight+addf1+currentnode.rightchild.addfactor)
+            currentnode1 = currentnode1.leftchild
+        else:
+            if xorr==1:
+                minw=min(minw,currentnode.leftchild.minweight+addf1+currentnode.leftchild.addfactor)
+            currentnode1 = currentnode1.rightchild
+        xorr1=xor(xorr1,currentnode1.revbit)
+        addf1=addf1+currentnode1.addfactor
+    xorr1=xor(xorr1,currentnode1.revbit)
+    addf1=addf1+currentnode1.addfactor
+    minw=min(minw,currentnode.key+addf1)
+    for i in bg:
+        minw=min(minw,currentnode.key+addf2)
+        if i=='l':
+            if xorr==1:
+                minw=min(minw,currentnode.rightchild.minweight+addf2+currentnode.rightchild.addfactor)
+            currentnode2 = currentnode2.leftchild
+        else:
+            if xorr==0:
+                minw=min(minw,currentnode.leftchild.minweight+addf2+currentnode.leftchild.addfactor)
+            currentnode2 = currentnode2.rightchild
+        xorr2=xor(xorr2,currentnode2.revbit)
+        addf2=addf2+currentnode2.addfactor
+    xorr2=xor(xorr2,currentnode2.revbit)
+    addf2=addf2+currentnode2.addfactor
+    minw=min(minw,currentnode.key+addf1)
+    return(minw)
+
+
+
+
+                
+
+
     pass
 
 # is_reachable 
