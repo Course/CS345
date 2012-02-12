@@ -1,4 +1,4 @@
-import random,sys
+import random,sys,time
 
 def random_data_generator (max_r):
     for i in range(max_r):
@@ -44,28 +44,32 @@ def revPath(din,dout,key):
 
 if __name__ == "__main__":
     operations = ['L','C','A','R','M','I']
-    probability = [0.5,0.3,0.05,0.05,0.05,0.05] ## Respective probabilities with which to choose these 
-    tnum = 1000000                              ## Number of nodes 
+    probability = [0.7,0.1,0.05,0.05,0.05,0.05] ## Respective probabilities with which to choose these 
+    tnum = 10000000                              ## Number of nodes 
     maxweight = 1000                            ## Max weight to be used in link 
     maxd = 20                                   ## Argument of multiadd
-    testcases = 10000                           ## Can be less than this number due to continue skips 
+    testcases = 1000000                           ## Can be less than this number due to continue skips 
     testfile = 'testcases.txt'                  ## Test case stored here 
     edgein = {}
     edgeout = {}
-    f = open(testfile,'w')
+    f = open(str(testcases)+testfile,'w')
     f.write(str(tnum)+"\n")
     for i in range(testcases):    
-        assert(set(edgein.keys())==set(edgeout.values()))
-        assert(set(edgeout.keys())==set(edgein.values()))
-        assert(None not in edgein and None not in edgeout)
+        #assert(set(edgein.keys())==set(edgeout.values()))
+        #assert(set(edgeout.keys())==set(edgein.values()))
+        #assert(None not in edgein and None not in edgeout)
         op=random_select(operations,probability)
         d = random.randint(-maxd,maxd)
-        print("Generating test",i," with "+op)
+        if i%1000==0:
+            print("Generating test",i," with "+op)
         if op=='L':
             node1 = random.randint(1,tnum-1)
             node2 = random.randint(1,tnum-1)
             weight = random.randint(0,maxweight-1)
             t1=findEnd(edgein,node1)
+            temp1=findEnd(edgein,node2)
+            if t1==temp1 :
+                continue
             t2=findEnd(edgeout,node2)
             edgein[t1]=t2
             edgeout[t2]=t1
@@ -102,4 +106,3 @@ if __name__ == "__main__":
             node1 = random.randint(1,tnum)
             node2 = random.randint(1,tnum)
             f.write("I "+str(node1) + " " +str(node2)+"\n")
-

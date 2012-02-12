@@ -1,5 +1,5 @@
 #!/bin/python 
-import sys 
+import sys,time 
 
 # Linked list implementation of dynamic paths 
 class Node():
@@ -68,10 +68,10 @@ def is_reachable(u,v):
     tail = v
     while(head != None):
         if head == tail :
-            print("1")
+            #print("1")
             return 
         head = head.next
-    print("0")
+    #print("0")
 
 # report_min O(n)
 def report_min(u,v):
@@ -83,7 +83,7 @@ def report_min(u,v):
     while(head.next != tail):
         head = head.next 
         minim = min(minim,head.nextweight)
-    print(minim)
+    #print(minim)
 
 # Helpers 
 def findRoot(node):
@@ -115,8 +115,11 @@ if __name__ == "__main__":
     avl=[]
     for i in range(nodes):
         avl.append(Node(i))
-    print_path(avl)
+    #print_path(avl)
+    j=1
+    t0=time.time()
     for lines in sys.stdin :
+        #print("Test case no. ",j)
         l = lines.split(' ')
         fn = l[0]
         arg = [int(i) for i in l[1:]]
@@ -135,5 +138,7 @@ if __name__ == "__main__":
         else:
             print ("Unrecognised input")
             break
-        print_path(avl)
+        j+=1
+        #print_path(avl)
+    print("Time =",time.time() - t0)
 
