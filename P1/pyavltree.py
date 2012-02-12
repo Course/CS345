@@ -582,7 +582,7 @@ def special_merge(root1, root2, xNode):
     # dont delete any node
 
 def rbset(node):
-    if revBit == 0 :
+    if node.revBit == 0 :
         return node 
     else: 
         h = node.head 
@@ -639,7 +639,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                 currentNode = currentNode.leftChild
             else : 
                 if bgtree:
-                    bgtree = special_merge(rbinv(currentNode.leftChild),bgtrees,bgmid)
+                    bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
                     bgmid = rbset(currentNode)
                 else :
                     bgtree = rbinv(currentNode.leftChild)
@@ -650,7 +650,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
         bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
         smtree = special_merge(smtree,currentNode.leftChild,smmid)
     else :
-        bgtree = special_merge(rbinv(currentNode.leftChild),bgtrees,bgmid)
+        bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
         smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
 
 # link 
@@ -764,26 +764,29 @@ def cut(u,v):
     vVertex = nodes[v-1]
     #print_path(uVertex)
     #print_path(vVertex)
-    uEdge = uVertex.outedge
-    vEdge = vVertex.inedge
-    assert(uEdge is not None)
-    assert(vEdge is not None)
-    if uEdge != vEdge:
+    uoEdge = uVertex.outedge
+    uiEdge = uVertex.inedge
+    viEdge = vVertex.inedge
+    voEdge = vVertex.outedge
+    if (uoEdge == voEdge or uoEdge == viEdge) and uoEdge != None :
+        uEdge = uoEdge 
+    elif (uiEdge == viEdge or uiEdge == voEdge) and uiEdge !=None :
+        uEdge = uiEdge 
+    else :
         return "No edge between u and v"
-    else:
-        assert(uEdge.get_root() == vEdge.get_root())
-        #sanity_check(vVertex.outedge.get_root())
-        #sanity_check(uVertex.inedge.get_root())
-        #sanity_check(vVertex.outedge.get_root())
-        (rt,path)=give_path(uEdge)
-        split(rt,path, uEdge)
-        uEdge.tail = None
-        uEdge.head = None
-        uVertex.outedge = None
-        vVertex.inedge = None
-        del uEdge
-        uVertex.inedge.get_root().toPNG("ufinal.png")
-        vVertex.outedge.get_root().toPNG("vfinal.png")
+    assert(uEdge is not None)
+    #sanity_check(vVertex.outedge.get_root())
+    #sanity_check(uVertex.inedge.get_root())
+    #sanity_check(vVertex.outedge.get_root())
+    (rt,path)=give_path(uEdge)
+    split(rt,path, uEdge)
+    uEdge.tail = None
+    uEdge.head = None
+    uVertex.outedge = None
+    vVertex.inedge = None
+    del uEdge
+    uVertex.inedge.get_root().toPNG("ufinal.png")
+    vVertex.outedge.get_root().toPNG("vfinal.png")
     #print_path(uVertex)
     #print_path(vVertex)
 
@@ -849,7 +852,7 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        pdb.set_trace()
+        #pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t) + "\n")
         fn = l[0]
