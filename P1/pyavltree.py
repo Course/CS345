@@ -774,7 +774,73 @@ def merge(root1, root2):
     return taller_tree.get_root()
 #return root of the merged tree
 
-def special_merge(root1, root2, xNode):
+def special_merge(uEdge,vEdge,edge, uVertex=None, vVertex=None):
+    if uEdge is None:
+        if vEdge is None:
+            edge.tail = uVertex
+            edge.head = vVertex
+            uVertex.outedge = edge
+            vVertex.inedge = edge
+            return edge.get_root()
+        else:
+            vRoot = vEdge.get_root()
+            edge.tail = uVertex
+            uVertex.outedge = edge
+            smallest_edge,x2 = vRoot.find_smallest()
+            if x2 == 0:
+                edge.head = smallest_edge.tail
+                smallest_edge.tail.inedge = edge
+                smallest_edge.leftChild = edge
+            else:
+                edge.revBit = x2
+                edge.head = smallest_edge.head
+                smallest_edge.head.outedge = edge
+                smallest_edge.rightChild = edge
+            #assert(smallest_edge.leftChild == None)
+            edge.parent = smallest_edge
+            recompute_heights(smallest_edge)
+            if not smallest_edge.balance() in [-1,0,1]:
+                smallest_edge.rebalance()
+            for node in smallest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                    node.rebalance()
+            return edge.get_root()
+    else:
+        if vEdge is None:
+            uRoot = uEdge.get_root()
+            biggest_edge,x1 = uRoot.find_biggest()
+            if x1 == 0:
+                edge.tail = biggest_edge.head 
+                biggest_edge.head.outedge =  edge
+                biggest_edge.rightChild = edge
+            else:
+                edge.revBit = x1
+                edge.tail = biggest_edge.tail
+                biggest_edge.tail.inedge = edge
+                biggest_edge.leftChild = edge
+            edge.head = vVertex
+            vVertex.inedge = edge
+            #assert( biggest_edge.rightChild == None)
+            edge.parent = biggest_edge
+            recompute_heights(biggest_edge)
+            if not biggest_edge.balance() in [-1,0,1]:
+                biggest_edge.rebalance()
+            for node in biggest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                  node.rebalance()
+            return edge.get_root()
+        else:
+            # both uEdge and vEdge are not None
+            if uEdge.get_root() == vEdge.get_root():
+                print ("Already linked")
+            else:
+                uEdge.get_root().toPNG("u.jpeg")
+                vEdge.get_root().toPNG("v.jpeg")
+                finaltree = extra_special_merge(uEdge.get_root(),vEdge.get_root(), edge)
+                sanity_check(finaltree)
+                finaltree.toPNG("r.jpeg")
+
+def extra_special_merge(root1, root2, xNode):
     #pdb.set_trace()
     taller_tree = root2 if root2.height >= root1.height else root1
     shorter_tree = root2 if taller_tree == root1 else root1
@@ -910,73 +976,11 @@ def link(u,v,w):
     print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
-    if uEdge is None:
-        if vEdge is None:
-            edge = Node(w)
-            edge.tail = uVertex
-            edge.head = vVertex
-            uVertex.outedge = edge
-            vVertex.inedge = edge
-        else:
-            edge = Node(w)
-            vRoot = vEdge.get_root()
-            edge.tail = uVertex
-            uVertex.outedge = edge
-            smallest_edge,x2 = vRoot.find_smallest()
-            if x2 == 0:
-                edge.head = smallest_edge.tail
-                smallest_edge.tail.inedge = edge
-                smallest_edge.leftChild = edge
-            else:
-                edge.revBit = x2
-                edge.head = smallest_edge.head
-                smallest_edge.head.outedge = edge
-                smallest_edge.rightChild = edge
-            #assert(smallest_edge.leftChild == None)
-            edge.parent = smallest_edge
-            recompute_heights(smallest_edge)
-            if not smallest_edge.balance() in [-1,0,1]:
-                smallest_edge.rebalance()
-            for node in smallest_edge.list_ancestors():
-                if not node.balance() in [-1,0,1]:
-                    node.rebalance()
-    else:
-        if vEdge is None:
-            edge = Node(w)
-            uRoot = uEdge.get_root()
-            biggest_edge,x1 = uRoot.find_biggest()
-            if x1 == 0:
-                edge.tail = biggest_edge.head 
-                biggest_edge.head.outedge =  edge
-                biggest_edge.rightChild = edge
-            else:
-                edge.revBit = x1
-                edge.tail = biggest_edge.tail
-                biggest_edge.tail.inedge = edge
-                biggest_edge.leftChild = edge
-            edge.head = vVertex
-            vVertex.inedge = edge
-            #assert( biggest_edge.rightChild == None)
-            edge.parent = biggest_edge
-            recompute_heights(biggest_edge)
-            if not biggest_edge.balance() in [-1,0,1]:
-                biggest_edge.rebalance()
-            for node in biggest_edge.list_ancestors():
-                if not node.balance() in [-1,0,1]:
-                  node.rebalance()
-        else:
-            # both uEdge and vEdge are not None
-            if uEdge.get_root() == vEdge.get_root():
-                print ("Already linked")
-            else:
-                edge = Node(w)
-                uEdge.get_root().toPNG("u.jpeg")
-                vEdge.get_root().toPNG("v.jpeg")
-                special_merge(uEdge.get_root(),vEdge.get_root(), edge)
-                sanity_check(uEdge.get_root())
-                uEdge.get_root().toPNG("r.jpeg")
+    xNode = Node(w)
+    special_merge(uEdge,vEdge, xNode, uVertex, vVertex)
     print_path(u)
-    #uNode.get_root().toPNG("u.png")
+
+   #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
     #print_link(vNode.get_root())
     #vRoot = vNode.get_root()
