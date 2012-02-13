@@ -827,50 +827,77 @@ def special_merge(root1, root2, xNode):
     return taller_tree.get_root()
     # dont delete any node
 
+def rbset(node):
+    if node.revBit == 0 :
+        return node 
+    else: 
+        h = node.head 
+        t = node.tail 
+        node.head = t 
+        node.tail = h 
+        node.head.inedge = node 
+        node.tail.outedge = node 
+        node.revBit = 0 
+        return node 
+def rbinv(node):
+    if node.revBit == 1 :
+        node.revBit =0 
+    else :
+        node.revBit =1 
+
 # split :: avl -> node -> (avl,avl)
-def split(root,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
+def split(root,path,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
     currentNode = root
-    assert(root.find(node.key) == node)
-    smaller_tree = None
-    bigger_tree = None
-    while currentNode.key != node.key:
-        leftChild = currentNode.leftChild
-        rightChild = currentNode.rightChild
-        if currentNode.leftChild is not None:
-            currentNode.leftChild.parent = None
-        if currentNode.rightChild is not None:
-            currentNode.rightChild.parent = None
-        currentNode.leftChild = None
-        currentNode.rightChild = None
-        currentNode.height = 0
-        if currentNode.key < node.key:
-            smaller_tree = merge(smaller_tree, leftChild)
-            smaller_tree = merge(smaller_tree, currentNode)
-            currentNode = rightChild
-        else:
-            assert (currentNode.key > node.key)
-            bigger_tree = merge(rightChild, bigger_tree)
-            bigger_tree = merge(currentNode, bigger_tree)
-            currentNode = leftChild
-    assert(currentNode.key == node.key)
-    assert(currentNode == node)
-    leftChild = currentNode.leftChild
-    rightChild = currentNode.rightChild
-    if currentNode.leftChild is not None:
-        currentNode.leftChild.parent = None
-    if currentNode.rightChild is not None:
-        currentNode.rightChild.parent = None
-    currentNode.leftChild = None
-    currentNode.rightChild = None
-    if leftChild is not None:
-        smaller_tree = merge(smaller_tree,leftChild)
-    if rightChild is not None:
-        bigger_tree = merge(rightChild, bigger_tree)
-    currentNode.parent = None
-
-
-
-
+    #assert(root.find(node.key) == node)
+    counter = 0
+    xorr  = 0 
+    smtree= None
+    smmid = None 
+    bgtree = None
+    bgmid = None 
+    for d in path:
+        xorr = xor(xorr,currentNode.revBit)
+        if xorr == 0:
+            if d == 'L':
+                if bgtree:
+                    bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
+                    bgmid = rbset(currentNode)
+                else :
+                    bgtree = currentNode.rightChild
+                    bgmid = rbset(currentNode)
+                currentNode = currentNode.leftChild
+            else : 
+                if smtree:
+                    smtree = special_merge(smtree,currentNode.leftChild,smmid)
+                    smmid = rbset(currentNode)
+                else :
+                    smtree = currentNode.leftChild
+                    smmid = rbset(currentNode)
+                currentNode = currentNode.rightChild
+        else :
+            if d == 'L':
+                if bgtree:
+                    smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+                    smmid = rbset(currentNode)
+                else :
+                    smtree = rbinv(currentNode.rightChild)
+                    smmid = rbset(currentNode)
+                currentNode = currentNode.leftChild
+            else : 
+                if bgtree:
+                    bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
+                    bgmid = rbset(currentNode)
+                else :
+                    bgtree = rbinv(currentNode.leftChild)
+                    bgmid = rbset(currentNode)
+                currentNode = currentNode.rightChild
+    xorr = xor(xorr,currentNode.revBit)
+    if xorr == 0:
+        bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
+        smtree = special_merge(smtree,currentNode.leftChild,smmid)
+    else :
+        bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
+        smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
 
 # link 
 def link(u,v,w):
@@ -983,25 +1010,29 @@ def cut(u,v):
     vVertex = nodes[v-1]
     #print_path(uVertex)
     #print_path(vVertex)
-    uEdge = uVertex.outedge
-    vEdge = vVertex.inedge
-    assert(uEdge is not None)
-    assert(vEdge is not None)
-    if uEdge != vEdge:
+    uoEdge = uVertex.outedge
+    uiEdge = uVertex.inedge
+    viEdge = vVertex.inedge
+    voEdge = vVertex.outedge
+    if (uoEdge == voEdge or uoEdge == viEdge) and uoEdge != None :
+        uEdge = uoEdge 
+    elif (uiEdge == viEdge or uiEdge == voEdge) and uiEdge !=None :
+        uEdge = uiEdge 
+    else :
         return "No edge between u and v"
-    else:
-        assert(uEdge.get_root() == vEdge.get_root())
-        #sanity_check(vVertex.outedge.get_root())
-        #sanity_check(uVertex.inedge.get_root())
-        #sanity_check(vVertex.outedge.get_root())
-        split(uEdge.get_root(), uEdge)
-        uEdge.tail = None
-        uEdge.head = None
-        uVertex.outedge = None
-        vVertex.inedge = None
-        del uEdge
-        uVertex.inedge.get_root().toPNG("ufinal.png")
-        vVertex.outedge.get_root().toPNG("vfinal.png")
+    assert(uEdge is not None)
+    #sanity_check(vVertex.outedge.get_root())
+    #sanity_check(uVertex.inedge.get_root())
+    #sanity_check(vVertex.outedge.get_root())
+    (rt,path)=give_path(uEdge)
+    split(rt,path, uEdge)
+    uEdge.tail = None
+    uEdge.head = None
+    uVertex.outedge = None
+    vVertex.inedge = None
+    del uEdge
+    uVertex.inedge.get_root().toPNG("ufinal.png")
+    vVertex.outedge.get_root().toPNG("vfinal.png")
     #print_path(uVertex)
     #print_path(vVertex)
 
@@ -1026,24 +1057,180 @@ def reverse_path(u):
 
 
 # report_min
-def report_min(u,v):
-    pass
+def lprefix(u,v,lu,lv):
+    i=0
+    lp=[]
+    while(u[i]==v[i]):
+        lp.append(u[i])
+        i+=1
+        if i>=lu and i>= lv :
+            return (lp,None,[],None,[])
+        elif i>=lv:
+            return (lp,u[i],u[i+1:],None,[])
+        elif i>= lu:
+            return (lp,None,[],v[i],v[i+1:])
+        else :
+            pass
+    return (lp,u[i],u[i+1:],v[i],v[i+1:])
+
+def report_min(nodeu,nodev):
+    u = nodes[u-1].outedge if is_reachable_helper(u,nodes[u-1].outedge.head)==1 else nodes[u-1].inedge
+    v = nodes[v-1].inedge if is_reachable_helper(nodes[v-1].inedge.tail,v)==1 else nodes[u-1].outedge
+    if u == v:
+        print(u.addFactor + u.key)
+        return 
+    ur,up,upl = give_path(u)
+    vr,vp,vpl = give_path(v)
+    assert(ur==vr)
+    currentNode = ur 
+    xorr = ur.revBit
+    addf=currentNode.addFactor
+    #minw=currentNode.minWeight+currentNode.addFactor
+    (lp,u0,sm,v0,bg)=lprefix(up,vp,upl,vpl) 
+    for i in lp:
+        if i=='L':
+            currentNode = currentNode.leftChild
+        else:
+            currentNode = currentNode.rightChild 
+        addf=addf+currentNode.addFactor
+        #minw=min(minw,currentNode.minkey+addf)
+        xorr=xor(xorr,currentNode.revBit)
+    addf=addf+currentNode.addFactor
+    xorr=xor(xorr,currentNode.revBit)
+    cancestor = currentNode
+    minw=cancestor.key+addf
+    if u0 is None:
+        assert(cancestor == u)
+        if v0=='L':
+            cancestor = cancestor.leftChild
+        else:
+            cancestor = cancestor.rightChild
+        addf=addf+cancestor.addFactor
+        xorr=xor(xorr,cancestor.revBit)
+        minw=min(minw,cancestor.key+addf)
+        for i in bg:
+            if i=='L':
+                cancestor = cancestor.leftChild
+            else:
+                cancestor = cancestor.rightChild
+            addf=addf+cancestor.addFactor
+            xorr=xor(xorr,cancestor.revBit)
+            minw=min(minw,cancestor.key+addf)
+        return(minw)
+    elif v0 is None:
+        assert(cancestor == v)
+        if u0=='L':
+            cancestor = cancestor.leftChild
+        else:
+            cancestor = cancestor.rightChild
+        addf=addf+cancestor.addFactor
+        xorr=xor(xorr,cancestor.revBit)
+        minw=min(minw,cancestor.key+addf)
+        for i in sm:
+            if i=='L':
+                cancestor = cancestor.leftChild
+            else:
+                cancestor = cancestor.rightChild
+            addf=addf+cancestor.addFactor
+            xorr=xor(xorr,cancestor.revBit)
+            minw=min(minw,cancestor.key+addf)
+        return(minw)
+    else :
+        if u0=='L':
+            currentNode1 = currentNode.leftChild
+        else:
+            currentNode1 = currentNode.rightChild 
+        xorr1=xor(xorr,currentNode1.revBit)
+        addf1=addf1+currentNode1.addFactor
+        #minw=min(minw,currentNode1.key+addf1)
+        if v0=='L':
+            currentNode2 = currentNode.leftChild
+        else:
+            currentNode2 = currentNode.rightChild 
+        xorr2=xor(xorr,currentNode2.revBit)
+        addf2=addf2+currentNode2.addFactor
+        #minw=min(minw,currentNode2.key+addf2)
+        for i in sm:
+            minw=min(minw,currentNode1.key+addf1)
+            if i=='L':
+                if xorr1==0:
+                    if currentNode1.rightchild is not None:
+                        minw=min(minw,currentNode1.rightchild.minweight+addf1+currentNode1.rightchild.addfactor)
+                currentNode1 = currentNode1.leftchild
+            else:
+                if xorr==1:
+                    if currentNode1.leftchild is not None:
+                        minw=min(minw,currentNode1.leftchild.minweight+addf1+currentNode1.leftchild.addfactor)
+                currentNode1 = currentNode1.rightchild
+            xorr1=xor(xorr1,currentNode1.revbit)
+            addf1=addf1+currentNode1.addfactor
+        minw=min(minw,currentNode.key+addf1)
+        for i in bg:
+            minw=min(minw,currentNode2.key+addf2)
+            if i=='L':
+                if xorr==1:
+                    if currentNode2.rightchild is not None:
+                        minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addfactor)
+                currentNode2 = currentNode2.leftchild
+            else:
+                if xorr==0:
+                    if currentNode2.leftchild is not None:
+                        minw=min(minw,currentNode2.leftchild.minweight+addf2+currentNode2.leftchild.addfactor)
+                currentNode2 = currentNode2.rightchild
+            xorr2=xor(xorr2,currentNode2.revbit)
+            addf2=addf2+currentNode2.addfactor
+        minw=min(minw,currentNode2.key+addf1)
+        return(minw)
 
 # is_reachable 
 def is_reachable(u,v):
-    pass 
+    print(is_reachable_helper(u,v))
+def is_reachable_helper(u,v):
+    node1 = nodes[u-1].get_edge()
+    node2 = nodes[v-1].get_edge()
+    if node1==node2 :
+        return 1
+        #print("1")
+    else: 
+        r1,p1,l1 = give_path(node1)
+        r2,p2,l2 = give_path(node2)
+        if r1 == r2:
+            ca=r1                       # common ancestor 
+            lp,u0,urest,v0,vrest = lprefix(p1,p2,l1,l2)   # lp is the common path 
+            for i in lp:
+                if i=='L':
+                    ca = ca.leftChild
+                else:
+                    ca = ca.rightChild
+            if (ca == node1 and ((ca.revBit==0 and v0=='R') or (ca.revBit==1 and v0=='L')) or (ca==node2 and ((ca.revBit==0 and u0=='L') or (ca.revBit == 1 and u0=='R')))):
+                return 1
+                #print("1")
+            elif (ca.revBit==0 and u0=='L' and v0=='R') or (ca.revBit==1 and u0=='R' and v0=='L'):
+                return 1
+                #print("1")
+            else:
+                return 0
+                #print("0")
+        else:
+            return 0
+            #print("0")
+    
 
 # root and path to root 
 def give_path(u):
     node = u 
     path = []
+    length = 0
     while node.parent is not None :
         temp = node 
         node = node.parent 
         if temp == node.leftChild:
             path.append('L')
+            length +=1
         else :
             path.append('R')
+            length +=1
+    return (node, list(reversed(path)),length)
 
     return (node,path)
 def xor(a,b):
