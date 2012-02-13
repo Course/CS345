@@ -1,5 +1,5 @@
 def bst_to_dot(tree, stream,
-               get_key=lambda node: node.key,
+               get_key=lambda node: (str(node.key)+ "," + str(node.revBit)),
                get_left=lambda node: node.leftChild,
                get_right=lambda node: node.rightChild,
                nodestyle='fontname="Arial"'):

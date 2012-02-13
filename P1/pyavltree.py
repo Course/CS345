@@ -92,114 +92,360 @@ class Node():
         return currentNode
 
     def balance (self):
-        return (self.leftChild.height if self.leftChild else -1) - (self.rightChild.height if self.rightChild else -1)
+        return (self.left(self.revBit).height if self.left(self.revBit) else -1) - (self.right(self.revBit).height if self.right(self.revBit) else -1)
 
-    def rebalance (self):
+    def preserve_xor(self,oldxor, newpxor):
+            self.revBit = xor(oldxor, newpxor)
+
+    def rebalance (self) :
         node_to_rebalance = self
-        A = node_to_rebalance 
+        A = node_to_rebalance
+        xorA = A.revBit
+        alpha = None
+        beta = None
         F = A.parent #allowed to be NULL
         if node_to_rebalance.balance() == -2:
-            if node_to_rebalance.rightChild.balance() <= 0:
+            if node_to_rebalance.right(node_to_rebalance.revBit).balance() <= 0:
                 """Rebalance, case RRC """
-                B = A.rightChild
-                C = B.rightChild
+                if A.revBit == 0:
+                    B = A.rightChild
+                else:
+                    B = A.leftChild
+                
+                if B.revBit == 0:
+                    C = B.rightChild
+                    beta = B.leftChild
+                else:
+                    C = B.leftChild
+                    beta = B.rightChild
+                
+                xorB = xor(B.revBit,xorA)
+                if beta is not None:
+                    xorbeta = xor(beta.revBit, xorB)
                 assert (not A is None and not B is None and not C is None)
-                A.rightChild = B.leftChild
-                if A.rightChild:
-                    A.rightChild.parent = A
-                B.leftChild = A
+                
+                if A.revBit == 0:
+                    if B.revBit == 0:
+                        A.rightChild = B.leftChild
+                    else:
+                        A.rightChild = B.rightChild
+                else:
+                    if B.revBit == 0:
+                        A.leftChild = B.leftChild
+                    else:
+                        A.leftChild = B.rightChild
+
+                if A.revBit == 0:
+                    if A.rightChild:
+                        A.rightChild.parent = A
+                else:
+                    if A.leftChild:
+                        A.leftChild.parent = A
+                
+                if B.revBit == 0:
+                    B.leftChild = A
+                else:
+                    B.rightChild = A
+
                 A.parent = B                                                               
                 if F is None:                                                              
                    #BUG HERE
                    #self.rootNode = B 
                    #self.rootNode.parent = None                                                   
                    B.parent = None
-                else:                                                                        
-                   if F.rightChild == A:                                                          
-                       F.rightChild = B                                                                  
-                   else:                                                                      
-                       F.leftChild = B                                                                   
+                else:
+                   if F.revBit == 0:
+                       if F.rightChild == A:                                                          
+                           F.rightChild = B                                                                  
+                       else:                                                                      
+                           F.leftChild = B
+                   else:
+                       if F.leftChild == A:
+                           F.leftChild = B
+                       else:
+                            F.rightChild = B
                    B.parent = F 
                 recompute_heights (A) 
-                recompute_heights (B.parent)                                                                                         
+                recompute_heights (B.parent)
+                nxorB = B.revBit
+                nxorA = xor(A.revBit,nxorB)
+                B.preserve_xor(xorB, 0)
+                A.preserve_xor(xorA, nxorB)
+                if beta is not None:
+                    beta.preserve_xor(xorbeta, nxorA)
             else:
                 """Rebalance, case RLC """
-                B = A.rightChild
-                C = B.leftChild
+                if A.revBit == 0:
+                    B = A.rightChild
+                else:
+                    B = A.leftChild
+
+                if B.revBit == 0:
+                    C = B.leftChild
+                else:
+                    C = B.rightChild
+
+                if C.revBit == 0:
+                    cl = C.leftChild
+                    cr = C.rightChild
+                else:
+                    cl = C.rightChild
+                    cr = C.leftChild
+
+                xorB = xor(B.revBit,xorA)
+                xorC = xor(C.revBit,xorB)
+                if cl is not None:
+                    xorcl = xor(cl.revBit, xorC)
+                if cr is not None:
+                    xorcr = xor(cr.revBit, xorC)
                 assert (not A is None and not B is None and not C is None)
-                B.leftChild = C.rightChild
-                if B.leftChild:
-                    B.leftChild.parent = B
-                A.rightChild = C.leftChild
-                if A.rightChild:
-                    A.rightChild.parent = A
-                C.rightChild = B
+
+                if B.revBit == 0:
+                    if C.revBit == 0:
+                        B.leftChild = C.rightChild
+                    else:
+                        B.leftChild = C.leftChild
+                else:
+                    if C.revBit == 0:
+                        B.rightChild = C.rightChild
+                    else:
+                        B.rightChild = C.leftChild
+                
+                if B.revBit == 0:
+                    if B.leftChild:
+                        B.leftChild.parent = B
+                else:
+                    if B.rightChild:
+                        B.rightChild.parent = B
+
+                if A.revBit == 0:
+                    if C.revBit == 0:
+                        A.rightChild = C.leftChild
+                    else:
+                        A.rightChild = C.rightChild
+                else:
+                    if C.revBit == 0:
+                        A.leftChild = C.leftChild
+                    else:
+                        A.leftChild = C.rightChild
+                
+                if A.revBit == 0:
+                    if A.rightChild:
+                        A.rightChild.parent = A
+                else:
+                    if A.leftChild:
+                        A.leftChild.parent = A
+
+                if C.revBit == 0:
+                    C.rightChild = B
+                else:
+                    C.leftChild = B
+                
                 B.parent = C                                                               
-                C.leftChild = A
+                
+                if C.revBit == 0:
+                    C.leftChild = A
+                else:
+                    C.rightChild = A
+
                 A.parent = C                                                             
                 if F is None:                                                             
                     #self.rootNode = C
                     #self.rootNode.parent = None                                                    
                     C.parent = None
-                else:                                                                        
-                    if F.rightChild == A:                                                         
-                        F.rightChild = C                                                                                     
-                    else:                                                                      
-                        F.leftChild = C
+                else:
+                    if F.revBit == 0:
+                        if F.rightChild == A:                                                         
+                            F.rightChild = C                                                                                     
+                        else:                                                                      
+                            F.leftChild = C
+                    else:
+                        if F.leftChild == A:
+                            F.leftChild = C
+                        else:
+                            F.rightChild = C
+
                     C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
+                nxorC = C.revBit
+                C.preserve_xor(xorC, 0)
+                A.preserve_xor(xorA, nxorC)
+                B.preserve_xor(xorB, nxorC)
+                if cl is not None:
+                    cl.preserve_xor(xorcl,nxorB)
+                if cr is not None:
+                    cr.preserve_xor(xorcr,nxorA)
         else:
             assert(node_to_rebalance.balance() == +2)
-            if node_to_rebalance.leftChild.balance() >= 0:
-                B = A.leftChild
-                C = B.leftChild
+            if node_to_rebalance.left(node_to_rebalance.revBit).balance() >= 0:
+                
+                if A.revBit == 0:
+                    B = A.leftChild
+                else:
+                    B = A.rightChild
+
+                if B.revBit == 0:
+                    C = B.leftChild
+                    beta = B.rightChild
+                else:
+                    C = B.rightChild
+                    beta = B.leftChild
+
+                xorB = xor(B.revBit,xorA)
+                if beta is not Nonde:
+                    xorbeta = xor(beta.revBit, xorB)
                 """Rebalance, case LLC """
                 assert (not A is None and not B is None and not C is None)
-                A.leftChild = B.rightChild
-                if (A.leftChild): 
-                    A.leftChild.parent = A
-                B.rightChild = A
+
+                if A.revBit == 0:
+                    if B.revBit == 0:
+                        A.leftChild = B.rightChild
+                    else:
+                        A.leftChild = B.leftChild
+                else:
+                    if B.revBit == 0:
+                        A.rightChild = B.rightChild
+                    else:
+                        A.rightChild = B.leftChild
+
+                if A.revBit == 0:
+                    if (A.leftChild): 
+                        A.leftChild.parent = A
+                else:
+                    if (A.rightChild):
+                        A.rightChild.parent = A
+                
+                if B.revBit == 0:
+                    B.rightChild = A
+                else:
+                    B.leftChild = A
+
                 A.parent = B
                 if F is None:
                     #self.rootNode = B
                     #self.rootNode.parent = None
                     B.parent = None
                 else:
-                    if F.rightChild == A:
-                        F.rightChild = B
+                    if F.revBit == 0:
+                        if F.rightChild == A:
+                            F.rightChild = B
+                        else:
+                            F.leftChild = B
                     else:
-                        F.leftChild = B
+                        if F.leftChild == A:
+                            F.leftChild = B
+                        else:
+                            F.rightChild = B
+
                     B.parent = F
                 recompute_heights (A)
                 recompute_heights (B.parent) 
+                nxorB = B.revBit
+                nxorA = xor(A.revBit,nxorB)
+                B.preserve_xor(xorB, 0)
+                A.preserve_xor(xorA, nxorB)
+                if beta is not None:
+                    beta.preserve_xor(xorbeta, nxorA)
+
             else:
-                B = A.leftChild
-                C = B.rightChild 
+                if A.revBit == 0:
+                    B = A.leftChild
+                else:
+                    B = A.rightChild
+
+                if B.revBit == 0:
+                    C = B.rightChild
+                else:
+                    C = B.leftChild
+
+                if C.revBit == 0:
+                    cl = C.leftChild
+                    cr = C.rightChild
+                else:
+                    cl = C.rightChild
+                    cr = C.leftChild
+
+                xorB = xor(B.revBit,xorA)
+                xorC = xor(C.revBit,xorB)
+                if cl is not None:
+                    xorcl = xor(cl.revBit, xorC)
+                if cr is not None:
+                    xorcr = xor(cr.revBit, xorC)
                 """Rebalance, case LRC """
                 assert (not A is None and not B is None and not C is None)
-                A.leftChild = C.rightChild
-                if A.leftChild:
-                    A.leftChild.parent = A
-                B.rightChild = C.leftChild
-                if B.rightChild:
-                    B.rightChild.parent = B
-                C.leftChild = B
+                
+                if A.revBit == 0:
+                    if C.revBit == 0:
+                        A.leftChild = C.rightChild
+                    else:
+                        A.leftChild = C.leftChild
+                else:
+                    if C.revBit == 0:
+                        A.rightChild = C.rightChild
+                    else:
+                        A.rightChild = C.leftChild
+
+                if A.revBit == 0:
+                    if A.leftChild:
+                        A.leftChild.parent = A
+
+                if B.revBit == 0:
+                    if C.revBit == 0:
+                        B.rightChild = C.leftChild
+                    else:
+                        B.rightChild = C.rightChild
+                else:
+                    if C.revBit == 0:
+                        B.leftChild = C.leftChild
+                    else:
+                        B.leftChild = C.rightChild
+
+                if B.revBit == 0:
+                    if B.rightChild:
+                        B.rightChild.parent = B
+
+                if C.revBit == 0:
+                    C.leftChild = B
+                else:
+                    C.rightChild = B
+
                 B.parent = C
-                C.rightChild = A
+
+                if C.revBit == 0:
+                    C.rightChild = A
+                else:
+                    C.leftChild = A
+
                 A.parent = C
                 if F is None:
                    #self.rootNode = C
                    C.parent = None
                    #self.rootNode.parent = None
                 else:
-                   if (F.rightChild == A):
-                       F.rightChild = C
+                   if F.revBit == 0:
+                       if (F.rightChild == A):
+                           F.rightChild = C
+                       else:
+                           F.leftChild = C
                    else:
-                       F.leftChild = C
+                        if (F.leftChild == A):
+                            F.leftChild = C
+                        else:
+                            F.rightChild = C
+
                    C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
+                nxorC = C.revBit
+                C.preserve_xor(xorC, 0)
+                A.preserve_xor(xorA, nxorC)
+                B.preserve_xor(xorB, nxorC)
+                if cl is not None:
+                    cl.preserve_xor(xorcl,nxorA)
+                if cr is not None:
+                    cr.preserve_xor(xorcr,nxorB)
+
     
     
     def find_biggest(self):
@@ -524,7 +770,7 @@ def merge(root1, root2):
         recompute_heights(xNode)
     xNode.parent = None
     #xNode.height = xNode.max_children_height() + 1
-    replace_sub_tree(node, xNode)
+    replace_sub_tree(node, xNode, xorr)
     return taller_tree.get_root()
 #return root of the merged tree
 
@@ -578,7 +824,7 @@ def special_merge(root1, root2, xNode):
     #xNode.height = xNode.max_children_height() + 1
     replace_sub_tree(node, xNode)
     #node.parent = xNode
-
+    return taller_tree.get_root()
     # dont delete any node
 
 # split :: avl -> node -> (avl,avl)
