@@ -827,82 +827,124 @@ def lprefix(u,v,lu,lv):
             pass
     return (lp,u[i],u[i+1:],v[i],v[i+1:])
 
-def report_min(u,v):
-    ur,up = give_path(u)
-    vr,vp = give_path(v)
+def report_min(nodeu,nodev):
+    u = nodes[u-1].outedge if is_reachable_helper(u,nodes[u-1].outedge.head)==1 else nodes[u-1].inedge
+    v = nodes[v-1].inedge if is_reachable_helper(nodes[v-1].inedge.tail,v)==1 else nodes[u-1].outedge
+    if u == v:
+        print(u.addFactor + u.key)
+        return 
+    ur,up,upl = give_path(u)
+    vr,vp,vpl = give_path(v)
     assert(ur==vr)
     currentNode = ur 
     xorr = ur.revBit
     addf=currentNode.addFactor
-    minw=currentNode.minWeight+currentNode.addFactor
-    (lp,u0,sm,v0,bg)=lprefix(up,vp) 
+    #minw=currentNode.minWeight+currentNode.addFactor
+    (lp,u0,sm,v0,bg)=lprefix(up,vp,upl,vpl) 
     for i in lp:
         if i=='L':
             currentNode = currentNode.leftChild
         else:
             currentNode = currentNode.rightChild 
         addf=addf+currentNode.addFactor
-        minw=min(minw,currentNode.minkey+addf)
+        #minw=min(minw,currentNode.minkey+addf)
         xorr=xor(xorr,currentNode.revBit)
+    addf=addf+currentNode.addFactor
+    xorr=xor(xorr,currentNode.revBit)
     cancestor = currentNode
-    if u0=='L':
-        currentNode1 = currentNode.leftChild
-    else:
-        currentNode1 = currentNode.rightChild 
-    xorr1=xor(xorr,currentNode1.revBit)
-    addf1=addf1+currentNode1.addFactor
-    if v0=='L':
-        currentNode2 = currentNode.leftChild
-    else:
-        currentNode2 = currentNode.rightChild 
-    xorr2=xor(xorr,currentNode2.revBit)
-    addf2=addf2+currentNode2.addFactor
-    for i in sm:
-        minw=min(minw,currentnode.key+addf1)
-        if i=='l':
-            if xorr==0:
-                minw=min(minw,currentnode.rightchild.minweight+addf1+currentnode.rightchild.addfactor)
-            currentnode1 = currentnode1.leftchild
+    minw=cancestor.key+addf
+    if u0 is None:
+        assert(cancestor == u)
+        if v0=='L':
+            cancestor = cancestor.leftChild
         else:
-            if xorr==1:
-                minw=min(minw,currentnode.leftchild.minweight+addf1+currentnode.leftchild.addfactor)
-            currentnode1 = currentnode1.rightchild
-        xorr1=xor(xorr1,currentnode1.revbit)
-        addf1=addf1+currentnode1.addfactor
-    xorr1=xor(xorr1,currentnode1.revbit)
-    addf1=addf1+currentnode1.addfactor
-    minw=min(minw,currentnode.key+addf1)
-    for i in bg:
-        minw=min(minw,currentnode.key+addf2)
-        if i=='l':
-            if xorr==1:
-                minw=min(minw,currentnode.rightchild.minweight+addf2+currentnode.rightchild.addfactor)
-            currentnode2 = currentnode2.leftchild
+            cancestor = cancestor.rightChild
+        addf=addf+cancestor.addFactor
+        xorr=xor(xorr,cancestor.revBit)
+        minw=min(minw,cancestor.key+addf)
+        for i in bg:
+            if i=='L':
+                cancestor = cancestor.leftChild
+            else:
+                cancestor = cancestor.rightChild
+            addf=addf+cancestor.addFactor
+            xorr=xor(xorr,cancestor.revBit)
+            minw=min(minw,cancestor.key+addf)
+        return(minw)
+    elif v0 is None:
+        assert(cancestor == v)
+        if u0=='L':
+            cancestor = cancestor.leftChild
         else:
-            if xorr==0:
-                minw=min(minw,currentnode.leftchild.minweight+addf2+currentnode.leftchild.addfactor)
-            currentnode2 = currentnode2.rightchild
-        xorr2=xor(xorr2,currentnode2.revbit)
-        addf2=addf2+currentnode2.addfactor
-    xorr2=xor(xorr2,currentnode2.revbit)
-    addf2=addf2+currentnode2.addfactor
-    minw=min(minw,currentnode.key+addf1)
-    return(minw)
-
-
-
-
-                
-
-
-    pass
+            cancestor = cancestor.rightChild
+        addf=addf+cancestor.addFactor
+        xorr=xor(xorr,cancestor.revBit)
+        minw=min(minw,cancestor.key+addf)
+        for i in sm:
+            if i=='L':
+                cancestor = cancestor.leftChild
+            else:
+                cancestor = cancestor.rightChild
+            addf=addf+cancestor.addFactor
+            xorr=xor(xorr,cancestor.revBit)
+            minw=min(minw,cancestor.key+addf)
+        return(minw)
+    else :
+        if u0=='L':
+            currentNode1 = currentNode.leftChild
+        else:
+            currentNode1 = currentNode.rightChild 
+        xorr1=xor(xorr,currentNode1.revBit)
+        addf1=addf1+currentNode1.addFactor
+        #minw=min(minw,currentNode1.key+addf1)
+        if v0=='L':
+            currentNode2 = currentNode.leftChild
+        else:
+            currentNode2 = currentNode.rightChild 
+        xorr2=xor(xorr,currentNode2.revBit)
+        addf2=addf2+currentNode2.addFactor
+        #minw=min(minw,currentNode2.key+addf2)
+        for i in sm:
+            minw=min(minw,currentNode1.key+addf1)
+            if i=='L':
+                if xorr1==0:
+                    if currentNode1.rightchild is not None:
+                        minw=min(minw,currentNode1.rightchild.minweight+addf1+currentNode1.rightchild.addfactor)
+                currentNode1 = currentNode1.leftchild
+            else:
+                if xorr==1:
+                    if currentNode1.leftchild is not None:
+                        minw=min(minw,currentNode1.leftchild.minweight+addf1+currentNode1.leftchild.addfactor)
+                currentNode1 = currentNode1.rightchild
+            xorr1=xor(xorr1,currentNode1.revbit)
+            addf1=addf1+currentNode1.addfactor
+        minw=min(minw,currentNode.key+addf1)
+        for i in bg:
+            minw=min(minw,currentNode2.key+addf2)
+            if i=='L':
+                if xorr==1:
+                    if currentNode2.rightchild is not None:
+                        minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addfactor)
+                currentNode2 = currentNode2.leftchild
+            else:
+                if xorr==0:
+                    if currentNode2.leftchild is not None:
+                        minw=min(minw,currentNode2.leftchild.minweight+addf2+currentNode2.leftchild.addfactor)
+                currentNode2 = currentNode2.rightchild
+            xorr2=xor(xorr2,currentNode2.revbit)
+            addf2=addf2+currentNode2.addfactor
+        minw=min(minw,currentNode2.key+addf1)
+        return(minw)
 
 # is_reachable 
 def is_reachable(u,v):
+    print(is_reachable_helper(u,v))
+def is_reachable_helper(u,v):
     node1 = nodes[u-1].get_edge()
     node2 = nodes[v-1].get_edge()
     if node1==node2 :
-        print("1")
+        return 1
+        #print("1")
     else: 
         r1,p1,l1 = give_path(node1)
         r2,p2,l2 = give_path(node2)
@@ -915,13 +957,17 @@ def is_reachable(u,v):
                 else:
                     ca = ca.rightChild
             if (ca == node1 and ((ca.revBit==0 and v0=='R') or (ca.revBit==1 and v0=='L')) or (ca==node2 and ((ca.revBit==0 and u0=='L') or (ca.revBit == 1 and u0=='R')))):
-                print("1")
+                return 1
+                #print("1")
             elif (ca.revBit==0 and u0=='L' and v0=='R') or (ca.revBit==1 and u0=='R' and v0=='L'):
-                print("1")
+                return 1
+                #print("1")
             else:
-                print("0")
+                return 0
+                #print("0")
         else:
-            print("0")
+            return 0
+            #print("0")
     
 
 # root and path to root 
