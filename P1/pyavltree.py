@@ -293,7 +293,7 @@ class Node():
                     beta = B.leftChild
 
                 xorB = xor(B.revBit,xorA)
-                if beta is not Nonde:
+                if beta is not None:
                     xorbeta = xor(beta.revBit, xorB)
                 """Rebalance, case LLC """
                 assert (not A is None and not B is None and not C is None)
@@ -1066,7 +1066,7 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        pdb.set_trace()
+        #pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t) + "\n")
         fn = l[0]
