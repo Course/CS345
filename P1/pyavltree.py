@@ -811,11 +811,20 @@ def reverse_path(u):
 
 
 # report_min
-def lprefix(u,v):
+def lprefix(u,v,lu,lv):
     i=0
     lp=[]
     while(u[i]==v[i]):
         lp.append(u[i])
+        i+=1
+        if i>=lu and i>= lv :
+            return (lp,None,[],None,[])
+        elif i>=lv:
+            return (lp,u[i],u[i+1:],None,[])
+        elif i>= lu:
+            return (lp,None,[],v[i],v[i+1:])
+        else :
+            pass
     return (lp,u[i],u[i+1:],v[i],v[i+1:])
 
 def report_min(u,v):
@@ -890,20 +899,46 @@ def report_min(u,v):
 
 # is_reachable 
 def is_reachable(u,v):
-    pass 
+    node1 = nodes[u-1].get_edge()
+    node2 = nodes[v-1].get_edge()
+    if node1==node2 :
+        print("1")
+    else: 
+        r1,p1,l1 = give_path(node1)
+        r2,p2,l2 = give_path(node2)
+        if r1 == r2:
+            ca=r1                       # common ancestor 
+            lp,u0,urest,v0,vrest = lprefix(p1,p2,l1,l2)   # lp is the common path 
+            for i in lp:
+                if i=='L':
+                    ca = ca.leftChild
+                else:
+                    ca = ca.rightChild
+            if (ca == node1 and ((ca.revBit==0 and v0=='R') or (ca.revBit==1 and v0=='L')) or (ca==node2 and ((ca.revBit==0 and u0=='L') or (ca.revBit == 1 and u0=='R')))):
+                print("1")
+            elif (ca.revBit==0 and u0=='L' and v0=='R') or (ca.revBit==1 and u0=='R' and v0=='L'):
+                print("1")
+            else:
+                print("0")
+        else:
+            print("0")
+    
 
 # root and path to root 
 def give_path(u):
     node = u 
     path = []
+    length = 0
     while node.parent is not None :
         temp = node 
         node = node.parent 
         if temp == node.leftChild:
             path.append('L')
+            length +=1
         else :
             path.append('R')
-    return (node, reversed(path))
+            length +=1
+    return (node, list(reversed(path)),length)
 
     return (node,path)
 def xor(a,b):
