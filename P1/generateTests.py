@@ -64,6 +64,8 @@ if __name__ == "__main__":
         if op=='L':
             node1 = random.randint(1,tnum-1)
             node2 = random.randint(1,tnum-1)
+            if node1 == node2 or findEnd(edgein,node1)==findEnd(edgein,node2): 
+                continue
             weight = random.randint(0,maxweight-1)
             t1=findEnd(edgein,node1)
             t2=findEnd(edgeout,node2)
