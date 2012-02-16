@@ -54,7 +54,15 @@ class Node():
     
     def is_leaf(self):
         return (self.height == 0)
-   
+    
+    def min_weight(self):
+        minW = self.minWeight
+        if self.leftChild:
+            minW = min(minW,self.leftChild.minWeight)
+        if self.rightChild:
+            minW = min(minW,self.rightChild.minWeight)
+        self.minWeight = minW
+
     def max_children_height(self):
         if self.leftChild and self.rightChild:
             return max(self.leftChild.height, self.rightChild.height)
@@ -676,6 +684,16 @@ class Node():
             currentNode = currentNode.parent
         return ancestor_list
 
+def recompute_min_weights (start_from_node):
+        changed = True
+        node = start_from_node
+        while node and changed:
+            old_min_weight = node.minWeight
+            node.min_weight()
+            changed = node.minWeight != old_min_weight
+            node = node.parent
+
+
 def recompute_heights (start_from_node):
         changed = True
         node = start_from_node
@@ -770,8 +788,10 @@ def replace_sub_tree(old_root, new_root, parentxor):
                 new_root.parent = parent
                 recompute_heights(parent)
 
+    recompute_min_weights(parent)
     old_root.parent = new_root
     recompute_heights(new_root)
+    recompute_min_weights(new_root)
     if not new_root.balance() in [-1, 0, 1]:
         new_root.rebalance()
     for node in new_root.list_ancestors():
@@ -803,6 +823,7 @@ def special_merge(uEdge,vEdge,edge, uVertex=None, vVertex=None):
             #assert(smallest_edge.leftChild == None)
             edge.parent = smallest_edge
             recompute_heights(smallest_edge)
+            recompute_min_weights(smallest_edge)
             if not smallest_edge.balance() in [-1,0,1]:
                 smallest_edge.rebalance()
             for node in smallest_edge.list_ancestors():
@@ -827,6 +848,7 @@ def special_merge(uEdge,vEdge,edge, uVertex=None, vVertex=None):
             #assert( biggest_edge.rightChild == None)
             edge.parent = biggest_edge
             recompute_heights(biggest_edge)
+            recompute_min_weights(biggest_edge)
             if not biggest_edge.balance() in [-1,0,1]:
                 biggest_edge.rebalance()
             for node in biggest_edge.list_ancestors():
@@ -981,6 +1003,7 @@ def link(u,v,w):
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
     xNode = Node(w)
+    xNode.minWeight = xNode.key
     special_merge(uEdge,vEdge, xNode, uVertex, vVertex)
     print_path(u)
 
