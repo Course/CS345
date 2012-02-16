@@ -932,10 +932,13 @@ def rbset(node):
         node.revBit = 0 
         return node 
 def rbinv(node):
+    if node is None:
+        return node
     if node.revBit == 1 :
         node.revBit =0 
     else :
         node.revBit =1 
+    return Node
 
 # split :: avl -> node -> (avl,avl)
 def split(root,path,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
@@ -1045,25 +1048,52 @@ def cut(u,v):
     uiEdge = uVertex.inedge
     viEdge = vVertex.inedge
     voEdge = vVertex.outedge
-    if (uoEdge == voEdge or uoEdge == viEdge) and uoEdge != None :
-        uEdge = uoEdge 
-    elif (uiEdge == viEdge or uiEdge == voEdge) and uiEdge !=None :
-        uEdge = uiEdge 
+    if uoEdge is not None : 
+        if uoEdge == voEdge:
+            uEdge = uoEdge
+            (rt,path,length)=give_path(uEdge)
+            split(rt,path, uEdge)
+            uEdge.tail = None
+            uEdge.head = None
+            uVertex.outedge = None
+            vVertex.outedge = None
+            del uEdge
+        elif uoEdge == viEdge:
+            uEdge = uoEdge
+            (rt,path,length)=give_path(uEdge)
+            split(rt,path, uEdge)
+            uEdge.tail = None
+            uEdge.head = None
+            uVertex.outedge = None
+            vVertex.inedge = None
+            del uEdge
+    elif uiEdge is not None :
+        if uiEdge == voEdge:
+            uEdge = uiEdge
+            (rt,path,length)=give_path(uEdge)
+            split(rt,path, uEdge)
+            uEdge.tail = None
+            uEdge.head = None
+            uVertex.inedge = None
+            vVertex.outedge = None
+            del uEdge
+        elif uiEdge == viEdge:
+            uEdge = uiEdge
+            (rt,path,length)=give_path(uEdge)
+            split(rt,path, uEdge)
+            uEdge.tail = None
+            uEdge.head = None
+            uVertex.inedge = None
+            vVertex.inedge = None
+            del uEdge
     else :
         return "No edge between u and v"
     assert(uEdge is not None)
     #sanity_check(vVertex.outedge.get_root())
     #sanity_check(uVertex.inedge.get_root())
     #sanity_check(vVertex.outedge.get_root())
-    (rt,path)=give_path(uEdge)
-    split(rt,path, uEdge)
-    uEdge.tail = None
-    uEdge.head = None
-    uVertex.outedge = None
-    vVertex.inedge = None
-    del uEdge
-    uVertex.inedge.get_root().toPNG("ufinal.png")
-    vVertex.outedge.get_root().toPNG("vfinal.png")
+    #uVertex.inedge.get_root().toPNG("ufinal.png")
+    #vVertex.outedge.get_root().toPNG("vfinal.png")
     #print_path(uVertex)
     #print_path(vVertex)
 
