@@ -798,7 +798,7 @@ def replace_sub_tree(old_root, new_root, parentxor):
         if not node.balance () in [-1, 0, 1]:
             node.rebalance()
 
-def special_merge(uEdge,vEdge,edge, uVertex=None, vVertex=None):
+def special_merge(uEdge,vEdge,edge, uVertex, vVertex):
     if uEdge is None:
         if vEdge is None:
             edge.tail = uVertex
