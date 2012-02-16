@@ -58,9 +58,9 @@ class Node():
     def min_weight(self):
         minW = self.minWeight
         if self.leftChild:
-            minW = min(minW,self.leftChild.minWeight)
+            minW = min(minW,self.leftChild.minWeight+self.leftChild.addFactor)
         if self.rightChild:
-            minW = min(minW,self.rightChild.minWeight)
+            minW = min(minW,self.rightChild.minWeight+self.rightChild.addFactor)
         self.minWeight = minW
 
     def max_children_height(self):
@@ -178,6 +178,8 @@ class Node():
                    B.parent = F 
                 recompute_heights (A) 
                 recompute_heights (B.parent)
+                recompute_min_weights(A)
+                recompute_min_weights(B.parent)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
                 B.preserve_xor(xorB, 0)
@@ -281,6 +283,8 @@ class Node():
                     C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
                 nxorC = C.revBit
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
@@ -365,7 +369,9 @@ class Node():
 
                     B.parent = F
                 recompute_heights (A)
-                recompute_heights (B.parent) 
+                recompute_heights (B.parent)
+                recompute_min_weights(A)
+                recompute_min_weights(B.parent)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
                 B.preserve_xor(xorB, 0)
@@ -470,6 +476,8 @@ class Node():
                    C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
                 nxorC = C.revBit
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
