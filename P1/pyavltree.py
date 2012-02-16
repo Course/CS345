@@ -98,6 +98,7 @@ class Node():
             self.revBit = xor(oldxor, newpxor)
 
     def rebalance (self) :
+        #pdb.set_trace()
         node_to_rebalance = self
         A = node_to_rebalance
         xorA = A.revBit
@@ -889,7 +890,7 @@ def extra_special_merge(root1, root2, xNode):
         #recompute_heights(xNode)
     xNode.parent = None
     xNode.revBit = xorr
-    node.revBit = (0 if node.revBit == 1 else 0) if xorr == 1 else node.revBit
+    node.revBit = (0 if node.revBit == 1 else 1) if xorr == 1 else node.revBit
     #xNode.height = xNode.max_children_height() + 1
     replace_sub_tree(node, xNode, xorr)
     #node.parent = xNode
