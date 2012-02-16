@@ -798,18 +798,12 @@ def replace_sub_tree(old_root, new_root, parentxor):
         if not node.balance () in [-1, 0, 1]:
             node.rebalance()
 
-def special_merge(uEdge,vEdge,edge, uVertex, vVertex):
+def special_merge(uEdge,vEdge,edge):
     if uEdge is None:
         if vEdge is None:
-            edge.tail = uVertex
-            edge.head = vVertex
-            uVertex.outedge = edge
-            vVertex.inedge = edge
             return edge.get_root()
         else:
             vRoot = vEdge.get_root()
-            edge.tail = uVertex
-            uVertex.outedge = edge
             smallest_edge,x2 = vRoot.find_smallest()
             if x2 == 0:
                 edge.head = smallest_edge.tail
@@ -843,9 +837,7 @@ def special_merge(uEdge,vEdge,edge, uVertex, vVertex):
                 edge.tail = biggest_edge.tail
                 biggest_edge.tail.inedge = edge
                 biggest_edge.leftChild = edge
-            edge.head = vVertex
-            vVertex.inedge = edge
-            #assert( biggest_edge.rightChild == None)
+                        #assert( biggest_edge.rightChild == None)
             edge.parent = biggest_edge
             recompute_heights(biggest_edge)
             recompute_min_weights(biggest_edge)
@@ -1005,10 +997,24 @@ def link(u,v,w):
     print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
-    xNode = Node(w)
-    xNode.minWeight = xNode.key
-    special_merge(uEdge,vEdge, xNode, uVertex, vVertex)
-    print_path(u)
+    edge = Node(w)
+    edge.minWeight = edge.key
+    if uEdge is None:
+        if vEdge is None:
+            edge.tail = uVertex
+            edge.head = vVertex
+            uVertex.outedge = edge
+            vVertex.inedge = edge
+        else:
+            edge.tail = uVertex
+            uVertex.outedge = edge
+    else:
+        if vEdge is None:
+            edge.head = vVertex
+            vVertex.inedge = edge
+        else:
+            pass
+    special_merge(uEdge,vEdge, edge)
 
    #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
