@@ -44,15 +44,15 @@ def revPath(din,dout,key):
 
 if __name__ == "__main__":
     operations = ['L','C','A','R','M','I']
-    probability = [0.8,0,0,0.2,0,0] ## Respective probabilities with which to choose these 
+    probability = [0.7,0,0,0.3,0,0] ## Respective probabilities with which to choose these 
     tnum = 100                              ## Number of nodes 
     maxweight = 1000                            ## Max weight to be used in link 
     maxd = 20                                   ## Argument of multiadd
-    testcases = 100                           ## Can be less than this number due to continue skips 
+    testcases = 100                          ## Can be less than this number due to continue skips 
     testfile = 'testcases.txt'                  ## Test case stored here 
     edgein = {}
     edgeout = {}
-    f = open(str(testcases)+testfile,'w')
+    f = open(testfile,'w')
     f.write(str(tnum)+"\n")
     for i in range(testcases):    
         #assert(set(edgein.keys())==set(edgeout.values()))
