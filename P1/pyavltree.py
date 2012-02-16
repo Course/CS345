@@ -1279,10 +1279,9 @@ def report_min(nodeu,nodev):
             if cancestor.leftChild is not None:
                 minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
         else :
-            if cancestor.rightchild is not None:
+            if cancestor.rightChild is not None:
                 minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
         return(minw)
-    ################################################# CORRECT FROM HERE ##################################################
     elif v0 is None:
         assert(cancestor == v)
         if u0=='L':
@@ -1294,12 +1293,24 @@ def report_min(nodeu,nodev):
         minw=min(minw,cancestor.key+addf)
         for i in sm:
             if i=='L':
+                if xorr==0:
+                    if cancestor.rightChild is not None:
+                         minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
                 cancestor = cancestor.leftChild
             else:
+                if xorr==1:
+                    if cancestor.leftChild is not None:
+                        minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
                 cancestor = cancestor.rightChild
             addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
             minw=min(minw,cancestor.key+addf)
+        if xorr==1:                  ## finally add weight to the left or right child of u according to xor
+            if cancestor.leftChild is not None:
+                minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
+        else :
+            if cancestor.rightChild is not None:
+                minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
         return(minw)
     else :
         if u0=='L':
@@ -1308,35 +1319,39 @@ def report_min(nodeu,nodev):
             currentNode1 = currentNode.rightChild 
         xorr1=xor(xorr,currentNode1.revBit)
         addf1=addf1+currentNode1.addFactor
-        #minw=min(minw,currentNode1.key+addf1)
         if v0=='L':
             currentNode2 = currentNode.leftChild
         else:
             currentNode2 = currentNode.rightChild 
         xorr2=xor(xorr,currentNode2.revBit)
         addf2=addf2+currentNode2.addFactor
-        #minw=min(minw,currentNode2.key+addf2)
         for i in sm:
             minw=min(minw,currentNode1.key+addf1)
             if i=='L':
                 if xorr1==0:
-                    if currentNode1.rightchild is not None:
-                        minw=min(minw,cancestor.rightchild.minWeight+addf1+cancestor.rightChild.addFactor)
+                    if currentNode1.rightChild is not None:
+                        minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
                 currentNode1 = currentNode1.leftchild
             else:
                 if xorr==1:
-                    if currentNode1.leftchild is not None:
-                        minw=min(minw,currentNode1.leftchild.minweight+addf1+currentNode1.leftchild.addfactor)
+                    if currentNode1.leftChild is not None:
+                        minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                 currentNode1 = currentNode1.rightchild
             xorr1=xor(xorr1,currentNode1.revbit)
-            addf1=addf1+currentNode1.addfactor
+            addf1=addf1+currentNode1.addFactor
         minw=min(minw,currentNode.key+addf1)
+        if xorr1==1:                  ## finally add weight to the left or right child of u according to xor
+            if currentNode1.leftChild is not None:
+                minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+        else :
+            if currentNode1.rightChild is not None:
+                minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
         for i in bg:
             minw=min(minw,currentNode2.key+addf2)
             if i=='L':
                 if xorr==1:
                     if currentNode2.rightchild is not None:
-                        minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addfactor)
+                        minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addFactor)
                 currentNode2 = currentNode2.leftchild
             else:
                 if xorr==0:
@@ -1345,7 +1360,13 @@ def report_min(nodeu,nodev):
                 currentNode2 = currentNode2.rightchild
             xorr2=xor(xorr2,currentNode2.revbit)
             addf2=addf2+currentNode2.addfactor
-        minw=min(minw,currentNode2.key+addf1)
+        minw=min(minw,currentNode2.key+addf2)
+        if xorr==0:                  ## finally add weight to the left or right child of v according to xor
+            if currentNode2.leftChild is not None:
+                minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+        else :
+            if currentNode2.rightChild is not None:
+                minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
         return(minw)
 
 # is_reachable 
