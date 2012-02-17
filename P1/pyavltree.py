@@ -75,7 +75,7 @@ class Node():
             minW = min(minW,self.leftChild.minWeight+self.leftChild.addFactor)
         if self.rightChild:
             minW = min(minW,self.rightChild.minWeight+self.rightChild.addFactor)
-        self.minWeight = minW
+        return minW
 
     def max_children_height(self):
         if self.leftChild and self.rightChild:
@@ -193,6 +193,7 @@ class Node():
                 recompute_heights (A) 
                 recompute_heights (B.parent)
                 recompute_min_weights(A)
+                recompute_min_weights(B)
                 recompute_min_weights(B.parent)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
@@ -299,6 +300,7 @@ class Node():
                 recompute_heights (B)
                 recompute_min_weights(A)
                 recompute_min_weights(B)
+                recompute_min_weights(C)
                 nxorC = C.revBit
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
@@ -385,6 +387,7 @@ class Node():
                 recompute_heights (A)
                 recompute_heights (B.parent)
                 recompute_min_weights(A)
+                recompute_min_weights(B)
                 recompute_min_weights(B.parent)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
@@ -492,6 +495,7 @@ class Node():
                 recompute_heights (B)
                 recompute_min_weights(A)
                 recompute_min_weights(B)
+                recompute_min_weights(C)
                 nxorC = C.revBit
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
@@ -516,30 +520,33 @@ class Node():
     def find_biggest(self):
         start_node = self
         xorr = start_node.revBit
+        sf = start_node.addFactor
         node = start_node
         while node.right(xorr):
             node = node.right(xorr)
             xorr = xor(xorr, node.revBit)
-
+            sf += node.addFactor
         if xorr == 0:
             assert(node.head.inedge is None or node.head.outedge is None)
         else:
             assert(node.tail.inedge is None or node.tail.outedge is None)
-        return (node , xorr)
+        return (node , xorr, sf)
     
     def find_smallest(self):
         start_node = self
         xorr = start_node.revBit
+        sf = start_node.addFactor
         node = start_node
         while node.left(xorr):
             node = node.left(xorr)
             xorr = xor(xorr, node.revBit)
+            sf += node.addFactor
         if xorr == 1:
             assert(node.head.inedge is None or node.head.outedge is None)
         else:
             assert(node.tail.inedge is None or node.tail.outedge is None)
 
-        return (node, xorr)
+        return (node, xorr, sf)
      
     #def inorder_non_recursive (self):
         #node = self
@@ -721,7 +728,7 @@ def recompute_min_weights (start_from_node):
         node = start_from_node
         while node and changed:
             old_min_weight = node.minWeight
-            node.min_weight()
+            node.minWeight = node.min_weight()
             changed = node.minWeight != old_min_weight
             node = node.parent
 
@@ -763,9 +770,9 @@ def sanity_check (start_node, *args):
         else:
             if node.height != node.max_children_height() + 1:
                 raise Exception ("Invalid height for node " + str(node) + ": " + str(node.height) + " instead of " + str(node.max_children_height() + 1) + "!" )
-            
-            #if node.minWeight != node.min_weight():
-                #raise Exception ("Invalid min weight for node " + str(node) + ": " + str(node.minWeight) + " instead of " + str(node.min_weight()) + "!")
+            new_min_weight = node.min_weight()
+            if node.minWeight != new_min_weight:
+                raise Exception ("Invalid min weight for node " + str(node) + ": " + str(node.minWeight) + " instead of " + str(new_min_weight) + "!")
 
             balFactor = node.balance()
             #Test the balance factor
@@ -796,6 +803,7 @@ def sanity_check (start_node, *args):
 def replace_sub_tree(old_root, new_root, parentxor):
     node_to_replace = old_root
     parent = node_to_replace.parent
+    recompute_min_weights(new_root)
     if node_to_replace.is_root():
         pass
     else:
@@ -805,28 +813,25 @@ def replace_sub_tree(old_root, new_root, parentxor):
             if node_to_replace == leftChild:
                 parent.leftChild = new_root
                 new_root.parent = parent
-                recompute_heights(parent)
             else:
                 assert(node_to_replace == rightChild)
                 parent.rightChild = new_root
                 new_root.parent = parent
-                recompute_heights(parent)
         else:
             assert(parentxor == 1)
             if node_to_replace == leftChild: #actually rightChild
                 parent.rightChild = new_root
                 new_root.parent = parent
-                recompute_heights(parent)
             else:
                 assert(node_to_replace == rightChild) #actually leftChild
                 parent.leftChild = new_root
                 new_root.parent = parent
-                recompute_heights(parent)
 
-    recompute_min_weights(parent)
     old_root.parent = new_root
     recompute_heights(new_root)
+    recompute_heights(parent)
     recompute_min_weights(new_root)
+    recompute_min_weights(parent)
     if not new_root.balance() in [-1, 0, 1]:
         new_root.rebalance()
     for node in new_root.list_ancestors():
@@ -905,7 +910,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
             return edge.get_root()
         else:
             vRoot = vEdge.get_root()
-            smallest_edge,x2 = vRoot.find_smallest()
+            smallest_edge,x2,af = vRoot.find_smallest()
             if x2 == 0:
                 edge.head = smallest_edge.tail
                 smallest_edge.tail.add_edge(edge)
@@ -1014,6 +1019,7 @@ def extra_special_merge(root1, root2, xNode):
         bigger_root.parent = xNode
         xNode.leftChild = node
         #recompute_heights(xNode)
+    recompute_min_weights(xNode)
     xNode.parent = None
     xNode.revBit = xorr
     node.revBit = (0 if node.revBit == 1 else 1) if xorr == 1 else node.revBit
@@ -1105,14 +1111,14 @@ def link(u,v,w):
     vVertex = nodes[v-1]
     if uVertex == vVertex:
         print ("Cannot link to itself")
-    print_path(u)
-    print_path(v)
+    #print_path(u)
+    #print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
     edge = Node(w)
     edge.minWeight = edge.key
     link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
-    print_path(u)
+    #print_path(u)
 
    #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
@@ -1668,8 +1674,8 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        if t+2 >= 154:
-            pdb.set_trace()
+        #if t+2 >= 250:
+            #pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
