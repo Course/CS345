@@ -566,9 +566,17 @@ class Node():
             xorr = xor(xorr, node.revBit)
             sf += node.addFactor
         if xorr == 0:
-            assert(node.head.inedge is None or node.head.outedge is None)
+            if node.head.inedge == node:
+                node.head.outedge = None
+            else:
+                assert(node.head.outedge == node)
+                node.head.inedge = None
         else:
-            assert(node.tail.inedge is None or node.tail.outedge is None)
+            if node.tail.inedge == node:
+                node.tail.outedge = None
+            else:
+                assert(node.tail.outedge == node)
+                node.tail.inedge = None
         return (node , xorr, sf)
     
     def find_smallest(self):
@@ -581,9 +589,17 @@ class Node():
             xorr = xor(xorr, node.revBit)
             sf += node.addFactor
         if xorr == 1:
-            assert(node.head.inedge is None or node.head.outedge is None)
+            if node.head.inedge == node:
+                node.head.outedge = None
+            else:
+                assert(node.head.outedge == node)
+                node.head.inedge = None
         else:
-            assert(node.tail.inedge is None or node.tail.outedge is None)
+            if node.tail.inedge == node:
+                node.tail.outedge = None
+            else:
+                assert(node.tail.outedge == node)
+                node.tail.inedge = None
 
         return (node, xorr, sf)
      
@@ -809,6 +825,8 @@ def sanity_check (start_node, *args):
             node = start_node
         else:
             node = args[0]
+        if node is not None and (node.tail is None or node.head is None):
+            raise Exception ("Node:" + str(node) + " Head : "+ str(node.head) +" , tail : "+str(node.tail))
         if (node  is None) or (node.is_leaf() and node.parent is None ):
             # trival - no sanity check needed, as either the tree is empty or there is only one node in the tree     
             pass    
@@ -875,8 +893,8 @@ def replace_sub_tree(old_root, new_root, parentxor):
     old_root.parent = new_root
     recompute_heights(new_root)
     recompute_heights(parent)
-    recompute_min_weights(new_root)
-    recompute_min_weights(parent)
+    recompute_all_weights(new_root,None)
+    #recompute_min_weights(parent)
     if not new_root.balance() in [-1, 0, 1]:
         new_root.rebalance()
     for node in new_root.list_ancestors():
@@ -884,24 +902,33 @@ def replace_sub_tree(old_root, new_root, parentxor):
             node.rebalance()
 
 def special_merge(uEdge,vEdge,edge):
-    assert(False)
+    if edge.leftChild:
+        edge.leftChild.parent = None
+    edge.leftChild = None
+    if edge.rightChild:
+        edge.rightChild.parent = None
+    edge.rightChild = None
     if uEdge is None:
         if vEdge is None:
             return edge.get_root()
         else:
             vRoot = vEdge.get_root()
-            smallest_edge,x2 = vRoot.find_smallest()
+            smallest_edge,x2,sf = vRoot.find_smallest()
             if x2 == 0:
                 edge.head = smallest_edge.tail
-                smallest_edge.tail.inedge = edge
+                smallest_edge.tail.add_edge(edge)
                 smallest_edge.leftChild = edge
             else:
                 edge.revBit = x2
                 edge.head = smallest_edge.head
-                smallest_edge.head.outedge = edge
+                smallest_edge.head.add_edge(edge)
                 smallest_edge.rightChild = edge
+
             #assert(smallest_edge.leftChild == None)
             edge.parent = smallest_edge
+            edge.addFactor -= sf
+            recompute_heights(edge)
+            assert( edge.height == 0)
             recompute_heights(smallest_edge)
             recompute_min_weights(smallest_edge)
             if not smallest_edge.balance() in [-1,0,1]:
@@ -909,22 +936,26 @@ def special_merge(uEdge,vEdge,edge):
             for node in smallest_edge.list_ancestors():
                 if not node.balance() in [-1,0,1]:
                     node.rebalance()
+            #assert(uVertex.inedge is None or uVertex.outedge is None)
             return edge.get_root()
     else:
         if vEdge is None:
             uRoot = uEdge.get_root()
-            biggest_edge,x1 = uRoot.find_biggest()
+            biggest_edge,x1,sf = uRoot.find_biggest()
             if x1 == 0:
                 edge.tail = biggest_edge.head 
-                biggest_edge.head.outedge =  edge
+                biggest_edge.head.add_edge(edge)
                 biggest_edge.rightChild = edge
             else:
                 edge.revBit = x1
                 edge.tail = biggest_edge.tail
-                biggest_edge.tail.inedge = edge
+                biggest_edge.tail.add_edge(edge)
                 biggest_edge.leftChild = edge
                         #assert( biggest_edge.rightChild == None)
             edge.parent = biggest_edge
+            edge.addFactor -= sf
+            recompute_heights(edge)
+            assert( edge.height == 0)
             recompute_heights(biggest_edge)
             recompute_min_weights(biggest_edge)
             if not biggest_edge.balance() in [-1,0,1]:
@@ -932,6 +963,7 @@ def special_merge(uEdge,vEdge,edge):
             for node in biggest_edge.list_ancestors():
                 if not node.balance() in [-1,0,1]:
                   node.rebalance()
+            #assert(vVertex.inedge is None or vVertex.outedge is None)
             return edge.get_root()
         else:
             # both uEdge and vEdge are not None
@@ -941,7 +973,7 @@ def special_merge(uEdge,vEdge,edge):
                 #uEdge.get_root().toPNG("u.jpeg")
                 #vEdge.get_root().toPNG("v.jpeg")
                 finaltree = extra_special_merge(uEdge.get_root(),vEdge.get_root(), edge)
-                sanity_check(finaltree)
+                #sanity_check(finaltree)
                 #finaltree.toPNG("r.jpeg")
 
 
@@ -1092,8 +1124,6 @@ def rbset(node):
         t = node.tail 
         node.head = t 
         node.tail = h 
-        node.head.inedge = node 
-        node.tail.outedge = node 
         node.revBit = 0 
         return node 
 def rbinv(node):
@@ -1110,54 +1140,209 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
     currentNode = root
     #assert(root.find(node.key) == node)
     counter = 0
-    xorr  = 0 
+    xorr  = 0
+    sf = 0
     smtree= None
     smmid = None 
     bgtree = None
     bgmid = None 
+    assert(path != [])
     for d in path:
         xorr = xor(xorr,currentNode.revBit)
+        sf += currentNode.addFactor
+        assert(currentNode is not None)
         if xorr == 0:
             if d == 'L':
+                if currentNode.rightChild:
+                    currentNode.rightChild.addFactor += sf
+                    currentNode.rightChild.parent = None
                 if bgtree:
+                    #if currentNode.rightChild :
+                        #bgmid.head = None
+                        #bgmid.tail = None
+                    #else :
+                        #bgmid.head = None
                     bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
-                    bgmid = rbset(currentNode)
                 else :
                     bgtree = currentNode.rightChild
-                    bgmid = rbset(currentNode)
+                bgmid = rbset(currentNode)
                 currentNode = currentNode.leftChild
-            else : 
+                if bgmid.leftChild:
+                    bgmid.leftChild.parent = None
+                    bgmid.leftChild = None
+                if bgmid.rightChild:
+                    bgmid.rightChild.parent = None
+                    bgmid.rightChild = None
+                if bgmid.parent:
+                    if bgmid.parent.leftChild == bgmid:
+                        bgmid.parent.leftChild = None
+                    else:
+                            bgmid.parent.rightChild = None
+                    bgmid.parent = None
+                bgmid.height = 0
+                bgmid.minWeight = bgmid.key
+                bgmid.key += sf - bgmid.addFactor
+                bgmid.addFactor = 0
+                bgmid.revBit = 0
+            else :
+                if currentNode.leftChild:
+                    currentNode.leftChild.addFactor += sf
+                    currentNode.leftChild.parent = None
                 if smtree:
+                    #if currentNode.leftChild :
+                        #smmid.head = None
+                        #smmid.tail = None
+                    #else :
+                        #smmid.tail = None
                     smtree = special_merge(smtree,currentNode.leftChild,smmid)
-                    smmid = rbset(currentNode)
                 else :
                     smtree = currentNode.leftChild
-                    smmid = rbset(currentNode)
+                smmid = rbset(currentNode)
                 currentNode = currentNode.rightChild
+                if smmid.leftChild:
+                    smmid.leftChild.parent = None
+                    smmid.leftChild = None
+                if smmid.rightChild:
+                    smmid.rightChild.parent = None
+                    smmid.rightChild = None
+                if smmid.parent:
+                    if smmid.parent.leftChild == smmid:
+                        smmid.parent.leftChild = None
+                    else:
+                        smmid.parent.rightChild = None
+                    smmid.parent = None
+                smmid.height = 0
+                smmid.minWeight = smmid.key
+                smmid.key += sf - smmid.addFactor
+                smmid.addFactor = 0
+                smmid.revBit = 0
         else :
             if d == 'L':
+                if currentNode.rightChild:
+                    currentNode.rightChild.parent = None
+                    currentNode.rightChild.addFactor += sf
                 if bgtree:
+                    #if currentNode.rightChild :
+                        #smmid.head = None
+                        #smmid.tail = None
+                    #else :
+                        #smmid.tail = None
                     smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
-                    smmid = rbset(currentNode)
                 else :
                     smtree = rbinv(currentNode.rightChild)
-                    smmid = rbset(currentNode)
+                smmid = rbset(currentNode)
                 currentNode = currentNode.leftChild
-            else : 
+                if smmid.leftChild:
+                    smmid.leftChild.parent = None
+                    smmid.leftChild = None
+                if smmid.rightChild:
+                    smmid.rightChild.parent = None
+                    smmid.rightChild = None
+                if smmid.parent:
+                    if smmid.parent.leftChild == smmid:
+                        smmid.parent.leftChild = None
+                    else:
+                        smmid.parent.rightChild = None
+                smmid.parent = None
+                smmid.height = 0
+                smmid.minWeight = smmid.key
+                smmid.key += sf - smmid.addFactor
+                smmid.addFactor = 0
+            else :
+                if currentNode.leftChild:
+                    currentNode.leftChild.parent = None
+                    currentNode.leftChild.addFactor += sf
                 if bgtree:
+                    #if currentNode.leftChild :
+                        #bgmid.head = None
+                        #bgmid.tail = None
+                    #else :
+                        #bgmid.head = None
                     bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
-                    bgmid = rbset(currentNode)
                 else :
                     bgtree = rbinv(currentNode.leftChild)
-                    bgmid = rbset(currentNode)
+                bgmid = rbset(currentNode)
                 currentNode = currentNode.rightChild
+                if bgmid.leftChild:
+                    bgmid.leftChild.parent = None
+                    bgmid.leftChild = None
+                if bgmid.rightChild:
+                    bgmid.rightChild.parent = None
+                    bgmid.rightChild = None
+                if bgmid.parent:
+                    if bgmid.parent.leftChild == bgmid:
+                        bgmid.parent.leftChild = None
+                    else:
+                        bgmid.parent.rightChild = None
+                    bgmid.parent = None
+                bgmid.height = 0
+                bgmid.minWeight = bgmid.key
+                bgmid.key += sf - bgmid.addFactor
+                bgmid.addFactor = 0
     xorr = xor(xorr,currentNode.revBit)
+    sf += currentNode.addFactor
+    if currentNode.leftChild:
+        currentNode.leftChild.addFactor += sf
+    if currentNode.rightChild:
+        currentNode.rightChild.addFactor += sf
     if xorr == 0:
-        bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
-        smtree = special_merge(smtree,currentNode.leftChild,smmid)
+        if bgmid:
+            #if currentNode.rightChild and bgtree:
+                #bgmid.head = None
+                #bgmid.tail =None
+            #elif currentNode.rightChild:
+                #bgmid.head = None
+            #elif bgtree :
+                #bgmid.tail = None
+            #else :
+                #return
+            bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
+            if currentNode.rightChild:
+                currentNode.rightChild.parent = None
+                currentNode.rightChild = None
+        if smmid:
+            #if currentNode.leftChild and bgtree:
+                #smmid.head = None
+                #smmid.tail =None
+            #elif currentNode.leftChild:
+                #smmid.tail = None
+            #elif bgtree :
+                #smmid.head = None
+            #else :
+                #return
+            smtree = special_merge(smtree,currentNode.leftChild,smmid)
+            if currentNode.leftChild:
+                currentNode.leftChild.parent = None
+                currentNode.leftChild = None
     else :
-        bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
-        smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+        if bgmid:
+            #if currentNode.leftChild and bgtree:
+                #bgmid.head = None
+                #bgmid.tail =None
+            #elif currentNode.leftChild:
+                #bgmid.head = None
+            #elif bgtree :
+                #bgmid.tail = None
+            #else :
+                #return
+            bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
+            if currentNode.leftChild:
+                currentNode.leftChild.parent = None
+                currentNode.leftChild = None
+        if smmid:
+            #if currentNode.rightChild and bgtree:
+                #smmid.head = None
+                #smmid.tail =None
+            #elif currentNode.rightChild:
+                #smmid.tail = None
+            #elif bgtree :
+                #smmid.head = None
+            #else :
+                #return
+            smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+            if currentNode.rightChild:
+                currentNode.rightChild.parent = None
+                currentNode.rightChild = None
 
 # link 
 def link(u,v,w):
@@ -1209,51 +1394,92 @@ def cut(u,v):
     vVertex = nodes[v-1]
     #print_path(uVertex)
     #print_path(vVertex)
+    #uEdge = None
     uoEdge = uVertex.outedge
     uiEdge = uVertex.inedge
     viEdge = vVertex.inedge
     voEdge = vVertex.outedge
-    if uoEdge is not None : 
-        if uoEdge == voEdge:
+    if uoEdge is not None and uoEdge == voEdge:
             uEdge = uoEdge
             (rt,path,length)=give_path(uEdge)
-            split(rt,path, uEdge)
+            if path == []:
+                if uEdge.leftChild :
+                    uEdge.leftChild.addFactor += uEdge.addFactor 
+                else:
+                    pass
+                if uEdge.rightChild :
+                    uEdge.rightChild.addFactor += uEdge.addFactor
+                else:
+                    pass
+            else :
+                split(rt,path, uEdge)
             uEdge.tail = None
             uEdge.head = None
             uVertex.outedge = None
             vVertex.outedge = None
-            del uEdge
-        elif uoEdge == viEdge:
+    elif uoEdge is not None and uoEdge == viEdge:
             uEdge = uoEdge
             (rt,path,length)=give_path(uEdge)
-            split(rt,path, uEdge)
+            if path == []:
+                if uEdge.leftChild :
+                    uEdge.leftChild.addFactor += uEdge.addFactor 
+                else:
+                    pass
+                if uEdge.rightChild :
+                    uEdge.rightChild.addFactor += uEdge.addFactor
+                else:
+                    pass
+            else:
+                split(rt,path, uEdge)
             uEdge.tail = None
             uEdge.head = None
             uVertex.outedge = None
             vVertex.inedge = None
-            del uEdge
-    elif uiEdge is not None :
-        if uiEdge == voEdge:
+    elif uiEdge is not None and uiEdge == voEdge:
             uEdge = uiEdge
             (rt,path,length)=give_path(uEdge)
-            split(rt,path, uEdge)
+            if path == []:
+                if uEdge.leftChild :
+                    uEdge.leftChild.addFactor += uEdge.addFactor 
+                if uEdge.rightChild :
+                    uEdge.rightChild.addFactor += uEdge.addFactor
+            else :
+                split(rt,path, uEdge)
             uEdge.tail = None
             uEdge.head = None
             uVertex.inedge = None
             vVertex.outedge = None
-            del uEdge
-        elif uiEdge == viEdge:
+    elif uiEdge is not None and uiEdge == viEdge:
             uEdge = uiEdge
             (rt,path,length)=give_path(uEdge)
-            split(rt,path, uEdge)
+            if path == []:
+                if uEdge.leftChild :
+                    uEdge.leftChild.addFactor += uEdge.addFactor 
+                if uEdge.rightChild :
+                    uEdge.rightChild.addFactor += uEdge.addFactor
+            else :
+                split(rt,path, uEdge)
             uEdge.tail = None
             uEdge.head = None
             uVertex.inedge = None
             vVertex.inedge = None
-            del uEdge
     else :
-        return "No edge between u and v"
+        print("No edge between u and v")
     assert(uEdge is not None)
+    temp = uEdge.parent
+    uEdge.parent = None
+    if temp:
+        if temp.leftChild == uEdge:
+            temp.leftChild = None
+        else:
+            temp.rightChild = None
+    if uEdge.leftChild:
+        uEdge.leftChild.parent = None
+        uEdge.leftChild = None
+    if uEdge.rightChild:
+        uEdge.rightChild.parent = None
+        uEdge.rightChild = None
+    del uEdge
     #sanity_check(vVertex.outedge.get_root())
     #sanity_check(uVertex.inedge.get_root())
     #sanity_check(vVertex.outedge.get_root())
@@ -1740,21 +1966,28 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        #if t+2 >= 19:
-            #pdb.set_trace()
+        if t+2 >= 116:
+            pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
             link(arg[0],arg[1],arg[2])
+            sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            sanity_check(nodes[arg[1]-1].get_edge().get_root())
         elif fn=='C':
             cut(arg[0],arg[1])
+            if nodes[arg[0]-1].get_edge():
+                sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            if nodes[arg[1]-1].get_edge():
+                sanity_check(nodes[arg[1]-1].get_edge().get_root())
         elif fn=='A':
             multi_add_weight(arg[0],arg[1],arg[2])
             sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='R':
             reverse_path(arg[0])
+            sanity_check(nodes[arg[0]-1])
         elif fn=='M':
             print (report_min(arg[0],arg[1]))
         elif fn=='I':
