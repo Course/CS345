@@ -16,6 +16,13 @@ class Vertex():
     def __repr__(self):
         return str(self.key) + "(" + str(self.inedge)  + "," + str(self.outedge) + ")"
 
+    def add_edge(self,edge):
+        if self.inedge is None:
+            self.inedge = edge
+        else:
+            assert(self.outedge is None)
+            self.outedge = edge
+
     def get_edge(self):
         if self.outedge is not None:
             return self.outedge
@@ -54,6 +61,13 @@ class Node():
     
     def is_leaf(self):
         return (self.height == 0)
+
+    def get_other_vertex(self,vertex1):
+        if self.head == vertex1:
+            return self.tail
+        else:
+            assert(self.tail == vertex1)
+            return self.head
     
     def min_weight(self):
         minW = self.minWeight
@@ -506,6 +520,11 @@ class Node():
         while node.right(xorr):
             node = node.right(xorr)
             xorr = xor(xorr, node.revBit)
+
+        if xorr == 0:
+            assert(node.head.inedge is None or node.head.outedge is None)
+        else:
+            assert(node.tail.inedge is None or node.tail.outedge is None)
         return (node , xorr)
     
     def find_smallest(self):
@@ -515,6 +534,11 @@ class Node():
         while node.left(xorr):
             node = node.left(xorr)
             xorr = xor(xorr, node.revBit)
+        if xorr == 1:
+            assert(node.head.inedge is None or node.head.outedge is None)
+        else:
+            assert(node.tail.inedge is None or node.tail.outedge is None)
+
         return (node, xorr)
      
     #def inorder_non_recursive (self):
@@ -807,6 +831,7 @@ def replace_sub_tree(old_root, new_root, parentxor):
             node.rebalance()
 
 def special_merge(uEdge,vEdge,edge):
+    assert(False)
     if uEdge is None:
         if vEdge is None:
             return edge.get_root()
@@ -863,7 +888,83 @@ def special_merge(uEdge,vEdge,edge):
                 #uEdge.get_root().toPNG("u.jpeg")
                 #vEdge.get_root().toPNG("v.jpeg")
                 finaltree = extra_special_merge(uEdge.get_root(),vEdge.get_root(), edge)
-                #sanity_check(finaltree)
+                sanity_check(finaltree)
+                #finaltree.toPNG("r.jpeg")
+
+
+def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
+    if uEdge is None:
+        if vEdge is None:
+            edge.tail = uVertex
+            edge.head = vVertex
+            uVertex.outedge = edge
+            vVertex.inedge = edge
+            return edge.get_root()
+        else:
+            vRoot = vEdge.get_root()
+            smallest_edge,x2 = vRoot.find_smallest()
+            if x2 == 0:
+                edge.head = smallest_edge.tail
+                smallest_edge.tail.add_edge(edge)
+                smallest_edge.leftChild = edge
+                edge.tail = uVertex
+                uVertex.add_edge(edge)
+            else:
+                edge.revBit = x2
+                edge.head = smallest_edge.head
+                smallest_edge.head.add_edge(edge)
+                smallest_edge.rightChild = edge
+                edge.tail = uVertex
+                uVertex.add_edge(edge)
+
+            #assert(smallest_edge.leftChild == None)
+            edge.parent = smallest_edge
+            recompute_heights(smallest_edge)
+            recompute_min_weights(smallest_edge)
+            if not smallest_edge.balance() in [-1,0,1]:
+                smallest_edge.rebalance()
+            for node in smallest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                    node.rebalance()
+            assert(uVertex.inedge is None or uVertex.outedge is None)
+            return edge.get_root()
+    else:
+        if vEdge is None:
+            uRoot = uEdge.get_root()
+            biggest_edge,x1 = uRoot.find_biggest()
+            if x1 == 0:
+                edge.tail = biggest_edge.head 
+                biggest_edge.head.add_edge(edge)
+                biggest_edge.rightChild = edge
+                edge.head = vVertex
+                vVertex.add_edge(edge)
+            else:
+                edge.revBit = x1
+                edge.tail = biggest_edge.tail
+                biggest_edge.tail.add_edge(edge)
+                biggest_edge.leftChild = edge
+                edge.head = vVertex
+                vVertex.add_edge(edge)
+                        #assert( biggest_edge.rightChild == None)
+            edge.parent = biggest_edge
+            recompute_heights(biggest_edge)
+            recompute_min_weights(biggest_edge)
+            if not biggest_edge.balance() in [-1,0,1]:
+                biggest_edge.rebalance()
+            for node in biggest_edge.list_ancestors():
+                if not node.balance() in [-1,0,1]:
+                  node.rebalance()
+            assert(vVertex.inedge is None or vVertex.outedge is None)
+            return edge.get_root()
+        else:
+            # both uEdge and vEdge are not None
+            if uEdge.get_root() == vEdge.get_root():
+                print ("Already linked")
+            else:
+                #uEdge.get_root().toPNG("u.jpeg")
+                #vEdge.get_root().toPNG("v.jpeg")
+                finaltree = extra_special_merge(uEdge.get_root(),vEdge.get_root(), edge)
+                sanity_check(finaltree)
                 #finaltree.toPNG("r.jpeg")
 
 def extra_special_merge(root1, root2, xNode):
@@ -879,16 +980,16 @@ def extra_special_merge(root1, root2, xNode):
     (b2,x2) = bigger_tree.find_smallest()
     if x1 == 0:
         xNode.tail = b1.head 
-        b1.head.outedge = xNode 
+        b1.head.add_edge(xNode) 
     else:
         xNode.tail = b1.tail
-        b1.tail.outedge = xNode
+        b1.tail.add_edge(xNode)
     if x2 == 0:
         xNode.head = b2.tail
-        b2.tail.inedge = xNode
+        b2.tail.add_edge(xNode)
     else:
         xNode.head = b2.head
-        b2.head.inedge = xNode
+        b2.head.add_edge(xNode)
     xNode.parent = None
     #if node.height == h or node.height == h+1:
     #    pass
@@ -1007,22 +1108,8 @@ def link(u,v,w):
     vEdge = vVertex.get_edge()
     edge = Node(w)
     edge.minWeight = edge.key
-    if uEdge is None:
-        if vEdge is None:
-            edge.tail = uVertex
-            edge.head = vVertex
-            uVertex.outedge = edge
-            vVertex.inedge = edge
-        else:
-            edge.tail = uVertex
-            uVertex.outedge = edge
-    else:
-        if vEdge is None:
-            edge.head = vVertex
-            vVertex.inedge = edge
-        else:
-            pass
-    special_merge(uEdge,vEdge, edge)
+    link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
+    print_path(u)
 
    #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
@@ -1298,10 +1385,19 @@ def lprefix(u,v,lu,lv):
     return (lp,u[i],u[i+1:],v[i],v[i+1:])
 
 def report_min(nodeu,nodev):
-    u = nodes[u-1].outedge if is_reachable_helper(u,nodes[u-1].outedge.head)==1 else nodes[u-1].inedge
-    v = nodes[v-1].inedge if is_reachable_helper(nodes[v-1].inedge.tail,v)==1 else nodes[u-1].outedge
+    assert(is_reachable_helper(nodes[nodeu-1],nodes[nodev-1]) == 1)
+    u = nodes[nodeu-1].outedge if nodes[nodeu - 1].outedge is not None and is_reachable_helper(nodes[nodeu-1],nodes[nodeu-1].outedge.get_other_vertex(nodes[nodeu-1]))==1 else nodes[nodeu-1].inedge
+    v = nodes[nodev-1].inedge if nodes[nodev - 1].inedge is not None and is_reachable_helper(nodes[nodev-1].inedge.get_other_vertex(nodes[nodev-1]),nodes[nodev-1])==1 else nodes[nodev-1].outedge
     if u == v:
-        print(u.addFactor + u.key)
+        ur,up,upl = give_path(u)
+        sumFactor = ur.addFactor
+        for i in up:
+            if i=='L':
+                ur = ur.leftChild
+            else:
+                ur = ur.rightChild
+            sumFactor = sumFactor + ur.addFactor
+        print(u.sumFactor + u.key)
         return 
     ur,up,upl = give_path(u)
     vr,vp,vpl = give_path(v)
@@ -1389,25 +1485,25 @@ def report_min(nodeu,nodev):
         else:
             currentNode1 = currentNode.rightChild 
         xorr1=xor(xorr,currentNode1.revBit)
-        addf1=addf1+currentNode1.addFactor
+        addf1=addf+currentNode1.addFactor
         if v0=='L':
             currentNode2 = currentNode.leftChild
         else:
             currentNode2 = currentNode.rightChild 
         xorr2=xor(xorr,currentNode2.revBit)
-        addf2=addf2+currentNode2.addFactor
+        addf2=addf+currentNode2.addFactor
         for i in sm:
             minw=min(minw,currentNode1.key+addf1)
             if i=='L':
                 if xorr1==0:
                     if currentNode1.rightChild is not None:
                         minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
-                currentNode1 = currentNode1.leftchild
+                currentNode1 = currentNode1.leftChild
             else:
                 if xorr==1:
                     if currentNode1.leftChild is not None:
                         minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
-                currentNode1 = currentNode1.rightchild
+                currentNode1 = currentNode1.rightChild
             xorr1=xor(xorr1,currentNode1.revbit)
             addf1=addf1+currentNode1.addFactor
         minw=min(minw,currentNode.key+addf1)
@@ -1442,10 +1538,10 @@ def report_min(nodeu,nodev):
 
 # is_reachable 
 def is_reachable(u,v):
-    print(is_reachable_helper(u,v))
+    print(is_reachable_helper(nodes[u-1],nodes[v-1]))
 def is_reachable_helper(u,v):
-    node1 = nodes[u-1].get_edge()
-    node2 = nodes[v-1].get_edge()
+    node1 = u.get_edge()
+    node2 = v.get_edge()
     if node1==node2 :
         return 1
         #print("1")
@@ -1454,16 +1550,18 @@ def is_reachable_helper(u,v):
         r2,p2,l2 = give_path(node2)
         if r1 == r2:
             ca=r1                       # common ancestor 
+            xorr=ca.revBit
             lp,u0,urest,v0,vrest = lprefix(p1,p2,l1,l2)   # lp is the common path 
             for i in lp:
                 if i=='L':
                     ca = ca.leftChild
                 else:
                     ca = ca.rightChild
-            if (ca == node1 and ((ca.revBit==0 and v0=='R') or (ca.revBit==1 and v0=='L')) or (ca==node2 and ((ca.revBit==0 and u0=='L') or (ca.revBit == 1 and u0=='R')))):
+                xorr=xor(xorr,ca.revBit)
+            if (ca == node1 and ((xorr==0 and v0=='R') or (xorr==1 and v0=='L')) or (ca==node2 and ((xorr==0 and u0=='L') or (xorr == 1 and u0=='R')))):
                 return 1
                 #print("1")
-            elif (ca.revBit==0 and u0=='L' and v0=='R') or (ca.revBit==1 and u0=='R' and v0=='L'):
+            elif (xorr==0 and u0=='L' and v0=='R') or (xorr==1 and u0=='R' and v0=='L'):
                 return 1
                 #print("1")
             else:
@@ -1511,7 +1609,7 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        #if t+2 >= 28:
+        #if t+2 >= 23:
             #pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t+2) + "\n")
