@@ -1102,14 +1102,14 @@ def link(u,v,w):
     vVertex = nodes[v-1]
     if uVertex == vVertex:
         print ("Cannot link to itself")
-    print_path(u)
-    print_path(v)
+    #print_path(u)
+    #print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
     edge = Node(w)
     edge.minWeight = edge.key
     link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
-    print_path(u)
+    #print_path(u)
 
    #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
@@ -1202,19 +1202,27 @@ def cut(u,v):
 
 
 # multiadd 
-def multi_add_weight(u,v,d):
-    u = nodes[u-1].outedge if is_reachable_helper(u,nodes[u-1].outedge.head)==1 else nodes[u-1].inedge
-    v = nodes[v-1].inedge if is_reachable_helper(nodes[v-1].inedge.tail,v)==1 else nodes[u-1].outedge
+def multi_add_weight(nodeu,nodev,d):
+    assert(is_reachable_helper(nodes[nodeu-1],nodes[nodev-1]) == 1)
+    u = nodes[nodeu-1].outedge if nodes[nodeu - 1].outedge is not None and is_reachable_helper(nodes[nodeu-1],nodes[nodeu-1].outedge.get_other_vertex(nodes[nodeu-1]))==1 else nodes[nodeu-1].inedge
+    v = nodes[nodev-1].inedge if nodes[nodev - 1].inedge is not None and is_reachable_helper(nodes[nodev-1].inedge.get_other_vertex(nodes[nodev-1]),nodes[nodev-1])==1 else nodes[nodev-1].outedge
     if u == v:
-        u.key = u.key + d
-        #print(u.addFactor + u.key)
+        ur,up,upl = give_path(u)
+        sumFactor = ur.addFactor
+        for i in up:
+            if i=='L':
+                ur = ur.leftChild
+            else:
+                ur = ur.rightChild
+            sumFactor = sumFactor + ur.addFactor
+        print(u.sumFactor + u.key)
         return 
     ur,up,upl = give_path(u)
     vr,vp,vpl = give_path(v)
     assert(ur==vr)
     currentNode = ur 
     xorr = ur.revBit
-    #addf=currentNode.addFactor
+    addf=currentNode.addFactor
     #minw=currentNode.minWeight+currentNode.addFactor
     (lp,u0,sm,v0,bg)=lprefix(up,vp,upl,vpl) 
     for i in lp:
@@ -1222,137 +1230,156 @@ def multi_add_weight(u,v,d):
             currentNode = currentNode.leftChild
         else:
             currentNode = currentNode.rightChild 
-        #addf=addf+currentNode.addFactor
+        addf=addf+currentNode.addFactor
         #minw=min(minw,currentNode.minkey+addf)
         xorr=xor(xorr,currentNode.revBit)
-    #addf=addf+currentNode.addFactor
+    addf=addf+currentNode.addFactor
     xorr=xor(xorr,currentNode.revBit)
     cancestor = currentNode
-    cancestor.key = cancestor.key + d
     #minw=cancestor.key+addf
-    if u0 is None:                 ### u is on the path from root to v . hence u is the common ancestor .
+    cancestor.key += d
+    if u0 is None:
         assert(cancestor == u)
         if v0=='L':
             cancestor = cancestor.leftChild
         else:
             cancestor = cancestor.rightChild
-        #addf=addf+cancestor.addFactor
+        addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        cancestor.key = cancestor.key + d
         #minw=min(minw,cancestor.key+addf)
+        cancestor.key += d
         for i in bg:
             if i=='L':
                 if xorr==1:
                     if cancestor.rightChild is not None:
+                        #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
                         cancestor.rightChild.addFactor += d
-                        #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==0:
                     if cancestor.leftChild is not None:
+                        #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
                         cancestor.leftChild.addFactor += d
-                        #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
                 cancestor = cancestor.rightChild
-            #addf=addf+cancestor.addFactor
+            addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            cancestor.key = cancestor.key + d
+            #minw=min(minw,cancestor.key+addf)
+            cancestor.key += d
         if xorr==0:                  ## finally add weight to the left or right child of v according to xor
             if cancestor.leftChild is not None:
+                #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
                 cancestor.leftChild.addFactor += d
         else :
             if cancestor.rightChild is not None:
+                #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
                 cancestor.rightChild.addFactor += d
-            #minw=min(minw,cancestor.key+addf)
-        #return(minw)
-        return 
-    elif v0 is None:               ### v is the common ancestor 
+        return
+    elif v0 is None:
         assert(cancestor == v)
         if u0=='L':
             cancestor = cancestor.leftChild
         else:
             cancestor = cancestor.rightChild
-        #addf=addf+cancestor.addFactor
+        addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        cancestor.key = cancestor.key + d
         #minw=min(minw,cancestor.key+addf)
+        cancestor.key += d
         for i in sm:
             if i=='L':
                 if xorr==0:
                     if cancestor.rightChild is not None:
-                        cancestor.rightChild.addFactor += d
-                        #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                         #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                         cancestor.rightChild.addFactor += d
                 cancestor = cancestor.leftChild
             else:
                 if xorr==1:
-                    if currentNode1.leftChild is not None:
+                    if cancestor.leftChild is not None:
+                        #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
                         cancestor.leftChild.addFactor += d
-                        #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                 cancestor = cancestor.rightChild
-            #addf=addf+cancestor.addFactor
+            addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            cancestor.key = cancestor.key + d
             #minw=min(minw,cancestor.key+addf)
-        if xorr==0:                  ## finally add weight to the left or right child of u according to xor
-            if cancestor.rightChild is not None:
-                cancestor.rightChild.addFactor += d
-        else :
+            cancestor.key += d
+        if xorr==1:                  ## finally add weight to the left or right child of u according to xor
             if cancestor.leftChild is not None:
-                cancestor.leftChild.addFactor += d
-        return
+                #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
+                cancestor.leftChild.addFactor +=d
+        else :
+            if cancestor.rightChild is not None:
+                #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                cancestor.rightChild.addFactor +=d
+        return 
     else :
         if u0=='L':
             currentNode1 = currentNode.leftChild
         else:
             currentNode1 = currentNode.rightChild 
         xorr1=xor(xorr,currentNode1.revBit)
-        #addf1=addf1+currentNode1.addFactor
+        addf1=addf+currentNode1.addFactor
         if v0=='L':
             currentNode2 = currentNode.leftChild
         else:
             currentNode2 = currentNode.rightChild 
         xorr2=xor(xorr,currentNode2.revBit)
-        #addf2=addf2+currentNode2.addFactor
+        addf2=addf+currentNode2.addFactor
         for i in sm:
-            currentNode1.key +=d
             #minw=min(minw,currentNode1.key+addf1)
+            cancestor1.key +=d
             if i=='L':
                 if xorr1==0:
                     if currentNode1.rightChild is not None:
-                        currentNode1.rightChild.addFactor +=d
                         #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                        currentNode1.rightChild.addFactor +=d
                 currentNode1 = currentNode1.leftChild
             else:
                 if xorr==1:
                     if currentNode1.leftChild is not None:
-                        currentNode1.leftChild.addFactor +=d
                         #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+                        currentNode1.leftChild.addFactor +=d
                 currentNode1 = currentNode1.rightChild
             xorr1=xor(xorr1,currentNode1.revBit)
-            #addf1=addf1+currentNode1.addFactor
-        currentNode1.key +=d
+            addf1=addf1+currentNode1.addFactor
         #minw=min(minw,currentNode.key+addf1)
+        currentNode1.key +=d
+        if xorr1==1:                  ## finally add weight to the left or right child of u according to xor
+            if currentNode1.leftChild is not None:
+                #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+                currentNode1.leftChild.addFactor +=d
+        else :
+            if currentNode1.rightChild is not None:
+                #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                currentNode1.rightChild.addFactor +=d
         for i in bg:
-            currentNode2.key +=d
             #minw=min(minw,currentNode2.key+addf2)
+            currentNode2.key +=d
             if i=='L':
                 if xorr==1:
                     if currentNode2.rightChild is not None:
-                        currentNode2.rightChild.addFactor +=d
                         #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                        currentNode2.rightChild.addFactor +=d
                 currentNode2 = currentNode2.leftChild
             else:
                 if xorr==0:
                     if currentNode2.leftChild is not None:
-                        currentNode2.leftChild.addFactor +=d
                         #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+                        currentNode2.leftChild.addFactor +=d
                 currentNode2 = currentNode2.rightChild
             xorr2=xor(xorr2,currentNode2.revBit)
-            #addf2=addf2+currentNode2.addFactor
+            addf2=addf2+currentNode2.addFactor
+        #minw=min(minw,currentNode2.key+addf2)
         currentNode2.key +=d
-        #minw=min(minw,currentNode2.key+addf1)
+        if xorr==0:                  ## finally add weight to the left or right child of v according to xor
+            if currentNode2.leftChild is not None:
+                minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+                currentNode2.leftChild.addFactor +=d
+
+        else :
+            if currentNode2.rightChild is not None:
+                #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                currentNode2.rightChild.addFactor +=d
         return
 
-    pass
 
 # reverse path 
 def reverse_path(u):
@@ -1364,13 +1391,21 @@ def reverse_path(u):
     while edge.parent is not None:
         edge = edge.parent
     edge.revBit = 1 if edge.revBit == 0 else 0
-    print_path(u)
+    #print_path(u)
 
 
 # report_min
 def lprefix(u,v,lu,lv):
     i=0
     lp=[]
+    if u == [] and v == []:
+        return (lp,None,[],None,[])
+    elif u == []:
+        return (lp,None,[],v[i],v[i+1:])
+    elif v == []:
+        return (lp,u[i],u[i+1:],None,[])
+    else:
+        pass
     while(u[i]==v[i]):
         lp.append(u[i])
         i+=1
@@ -1397,8 +1432,7 @@ def report_min(nodeu,nodev):
             else:
                 ur = ur.rightChild
             sumFactor = sumFactor + ur.addFactor
-        print(u.sumFactor + u.key)
-        return 
+        return sumFactor + u.key
     ur,up,upl = give_path(u)
     vr,vp,vpl = give_path(v)
     assert(ur==vr)
@@ -1506,7 +1540,7 @@ def report_min(nodeu,nodev):
                 currentNode1 = currentNode1.rightChild
             xorr1=xor(xorr1,currentNode1.revBit)
             addf1=addf1+currentNode1.addFactor
-        minw=min(minw,currentNode.key+addf1)
+        minw=min(minw,currentNode1.key+addf1)
         if xorr1==1:                  ## finally add weight to the left or right child of u according to xor
             if currentNode1.leftChild is not None:
                 minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
@@ -1542,6 +1576,8 @@ def is_reachable(u,v):
 def is_reachable_helper(u,v):
     node1 = u.get_edge()
     node2 = v.get_edge()
+    if node1 is None or node2 is None:
+        return 0
     if node1==node2 :
         return 1
         #print("1")
@@ -1577,6 +1613,7 @@ def give_path(u):
     node = u 
     path = []
     length = 0
+    assert(u is not None)
     while node.parent is not None :
         temp = node 
         node = node.parent 
@@ -1612,7 +1649,7 @@ if True:
         #if t+2 >= 23:
             #pdb.set_trace()
         l = lines.split(' ')
-        print ("Line no : " + str(t+2) + "\n")
+        #print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
@@ -1624,7 +1661,7 @@ if True:
         elif fn=='R':
             reverse_path(arg[0])
         elif fn=='M':
-            report_min(arg[0],arg[1])
+            print (report_min(arg[0],arg[1]))
         elif fn=='I':
             is_reachable(arg[0],arg[1])
         else:
