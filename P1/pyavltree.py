@@ -70,7 +70,7 @@ class Node():
             return self.head
     
     def min_weight(self):
-        minW = self.minWeight
+        minW = self.key
         if self.leftChild:
             minW = min(minW,self.leftChild.minWeight+self.leftChild.addFactor)
         if self.rightChild:
@@ -763,7 +763,10 @@ def sanity_check (start_node, *args):
         else:
             if node.height != node.max_children_height() + 1:
                 raise Exception ("Invalid height for node " + str(node) + ": " + str(node.height) + " instead of " + str(node.max_children_height() + 1) + "!" )
-                
+            
+            #if node.minWeight != node.min_weight():
+                #raise Exception ("Invalid min weight for node " + str(node) + ": " + str(node.minWeight) + " instead of " + str(node.min_weight()) + "!")
+
             balFactor = node.balance()
             #Test the balance factor
             if not (balFactor >= -1 and balFactor <= 1):
@@ -1102,14 +1105,14 @@ def link(u,v,w):
     vVertex = nodes[v-1]
     if uVertex == vVertex:
         print ("Cannot link to itself")
-    #print_path(u)
-    #print_path(v)
+    print_path(u)
+    print_path(v)
     uEdge = uVertex.get_edge()
     vEdge = vVertex.get_edge()
     edge = Node(w)
     edge.minWeight = edge.key
     link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
-    #print_path(u)
+    print_path(u)
 
    #uNode.get_root().toPNG("u.png")
     #vNode.get_root().toPNG("v.png")
@@ -1449,8 +1452,6 @@ def report_min(nodeu,nodev):
         addf=addf+currentNode.addFactor
         #minw=min(minw,currentNode.minkey+addf)
         xorr=xor(xorr,currentNode.revBit)
-    addf=addf+currentNode.addFactor
-    xorr=xor(xorr,currentNode.revBit)
     cancestor = currentNode
     minw=cancestor.key+addf
     if u0 is None:
@@ -1461,21 +1462,22 @@ def report_min(nodeu,nodev):
             cancestor = cancestor.rightChild
         addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        minw=min(minw,cancestor.key+addf)
         for i in bg:
             if i=='L':
                 if xorr==1:
                     if cancestor.rightChild is not None:
                         minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                    minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==0:
                     if cancestor.leftChild is not None:
                         minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
+                    minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.rightChild
             addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            minw=min(minw,cancestor.key+addf)
+        minw = min(minw,cancestor.key+addf)
         if xorr==0:                  ## finally add weight to the left or right child of v according to xor
             if cancestor.leftChild is not None:
                 minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
@@ -1491,21 +1493,22 @@ def report_min(nodeu,nodev):
             cancestor = cancestor.rightChild
         addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        minw=min(minw,cancestor.key+addf)
         for i in sm:
             if i=='L':
                 if xorr==0:
                     if cancestor.rightChild is not None:
                          minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                    minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==1:
                     if cancestor.leftChild is not None:
                         minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
+                    minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.rightChild
             addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            minw=min(minw,cancestor.key+addf)
+        minw=min(minw,cancestor.key+addf)
         if xorr==1:                  ## finally add weight to the left or right child of u according to xor
             if cancestor.leftChild is not None:
                 minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
@@ -1527,16 +1530,17 @@ def report_min(nodeu,nodev):
         xorr2=xor(xorr,currentNode2.revBit)
         addf2=addf+currentNode2.addFactor
         for i in sm:
-            minw=min(minw,currentNode1.key+addf1)
             if i=='L':
                 if xorr1==0:
                     if currentNode1.rightChild is not None:
                         minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                    minw=min(minw,currentNode1.key+addf1)
                 currentNode1 = currentNode1.leftChild
             else:
-                if xorr==1:
+                if xorr1==1:
                     if currentNode1.leftChild is not None:
                         minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+                    minw=min(minw,currentNode1.key+addf1)
                 currentNode1 = currentNode1.rightChild
             xorr1=xor(xorr1,currentNode1.revBit)
             addf1=addf1+currentNode1.addFactor
@@ -1548,21 +1552,22 @@ def report_min(nodeu,nodev):
             if currentNode1.rightChild is not None:
                 minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
         for i in bg:
-            minw=min(minw,currentNode2.key+addf2)
             if i=='L':
-                if xorr==1:
+                if xorr2==1:
                     if currentNode2.rightChild is not None:
                         minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                    minw=min(minw,currentNode2.key+addf2)
                 currentNode2 = currentNode2.leftChild
             else:
-                if xorr==0:
+                if xorr2==0:
                     if currentNode2.leftChild is not None:
                         minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+                    minw=min(minw,currentNode2.key+addf2)
                 currentNode2 = currentNode2.rightChild
             xorr2=xor(xorr2,currentNode2.revBit)
             addf2=addf2+currentNode2.addFactor
         minw=min(minw,currentNode2.key+addf2)
-        if xorr==0:                  ## finally add weight to the left or right child of v according to xor
+        if xorr2==0:                  ## finally add weight to the left or right child of v according to xor
             if currentNode2.leftChild is not None:
                 minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
         else :
@@ -1579,7 +1584,24 @@ def is_reachable_helper(u,v):
     if node1 is None or node2 is None:
         return 0
     if node1==node2 :
-        return 1
+        if node1.parent is not None:
+            rp,p,l = give_path(node1)
+            xorr = rp.revBit
+            for i in p :
+                if i=='L':
+                    rp = rp.leftChild
+                else:
+                    rp = rp.rightChild
+                xorr=xor(xorr,rp.revBit)
+            assert(rp==node1)
+        else:
+            xorr = node1.revBit
+        if xorr == 0 and node1.head == v and node1.tail == u :
+            return 1
+        elif xorr==1 and node1.tail == v and node1.head ==u:
+            return 1 
+        else :
+            return 0
         #print("1")
     else: 
         r1,p1,l1 = give_path(node1)
@@ -1646,10 +1668,10 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        #if t+2 >= 23:
-            #pdb.set_trace()
+        if t+2 >= 154:
+            pdb.set_trace()
         l = lines.split(' ')
-        #print ("Line no : " + str(t+2) + "\n")
+        print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
