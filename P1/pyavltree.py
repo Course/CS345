@@ -2,7 +2,7 @@
 from __future__ import print_function
 import random, math
 import sys
-import pdb
+import ipdb as pdb
 def random_data_generator (max_r):
     for i in xrange(max_r):
         yield random.randint(0, max_r)
@@ -117,13 +117,18 @@ class Node():
         return (self.left(xorr).height if self.left(xorr) else -1) - (self.right(xorr).height if self.right(xorr) else -1)
 
     def preserve_xor(self,oldxor, newpxor):
-            self.revBit = xor(oldxor, newpxor)
+        self.revBit = xor(oldxor, newpxor)
+        
+    def preserve_sf(self,oldAddFactor, newPAddFactor):
+        self.addFactor = oldAddFactor - newPAddFactor
+
 
     def rebalance (self) :
         #pdb.set_trace()
         node_to_rebalance = self
         A = node_to_rebalance
         xorA = A.revBit
+        sfA = 0 + A.addFactor
         alpha = None
         beta = None
         F = A.parent #allowed to be NULL
@@ -137,6 +142,7 @@ class Node():
                     B = A.leftChild
                 
                 xorB = xor(B.revBit,xorA)
+                sfB = sfA + B.addFactor
 
                 if xorB == 0:
                     C = B.rightChild
@@ -147,6 +153,7 @@ class Node():
                 
                 if beta is not None:
                     xorbeta = xor(beta.revBit, xorB)
+                    sfbeta = sfB + beta.addFactor
                 assert (not A is None and not B is None and not C is None)
                 
                 if xorA == 0:
@@ -192,15 +199,20 @@ class Node():
                    B.parent = F 
                 recompute_heights (A) 
                 recompute_heights (B.parent)
-                recompute_min_weights(A)
-                recompute_min_weights(B)
-                recompute_min_weights(B.parent)
+                B.preserve_sf(sfB,0)
+                A.preserve_sf(sfA,sfB)
+                #TODO delete nxors (useless)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
                 B.preserve_xor(xorB, 0)
                 A.preserve_xor(xorA, xorB)
                 if beta is not None:
+                    beta.preserve_sf(sfbeta, sfA)
                     beta.preserve_xor(xorbeta, xorA)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
+                recompute_min_weights(B.parent)
+
             else:
                 """Rebalance, case RLC """
                 if xorA == 0:
@@ -209,13 +221,15 @@ class Node():
                     B = A.leftChild
 
                 xorB = xor(B.revBit,xorA)
-                
+                sfB = sfA + B.addFactor
+
                 if xorB == 0:
                     C = B.leftChild
                 else:
                     C = B.rightChild
 
                 xorC = xor(C.revBit,xorB)
+                sfC = sfB + C.addFactor
                 
                 if xorC == 0:
                     cl = C.leftChild
@@ -226,8 +240,10 @@ class Node():
 
                 if cl is not None:
                     xorcl = xor(cl.revBit, xorC)
+                    sfcl = sfC + cl.addFactor
                 if cr is not None:
                     xorcr = xor(cr.revBit, xorC)
+                    sfcr = sfC + cr.addFactor
                 assert (not A is None and not B is None and not C is None)
 
                 if xorB == 0:
@@ -298,27 +314,34 @@ class Node():
                     C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
-                recompute_min_weights(A)
-                recompute_min_weights(B)
-                recompute_min_weights(C)
                 nxorC = C.revBit
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
                 B.preserve_xor(xorB, xorC)
+                C.preserve_sf(sfC, 0)
+                A.preserve_sf(sfA, sfC)
+                B.preserve_sf(sfB, sfC)
                 nxorA = xor(A.revBit,xorC)
                 nxorB = xor(A.revBit,xorC)
                 if cl is not None:
                     if cl.parent == A:
                         cl.preserve_xor(xorcl, xorA)
+                        cl.preserve_sf(sfcl, sfA)
                     else:
                         assert(cl.parent == B)
                         cl.preserve_xor(xorcl, xorB)
+                        cl.preserve_sf(sfcl,sfB)
                 if cr is not None:
                     if cr.parent == A:
                         cr.preserve_xor(xorcr, xorA)
+                        cr.preserve_sf(sfcr,sfA)
                     else:
                         assert(cr.parent == B)
                         cr.preserve_xor(xorcr, xorB)
+                        cr.preserve_sf(sfcr,sfB)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
+                recompute_min_weights(C)
         else:
             assert(node_to_rebalance.balance(xorA) == +2)
             xorr = xor(node_to_rebalance.left(xorA).revBit, xorA)
@@ -330,6 +353,7 @@ class Node():
                     B = A.rightChild
 
                 xorB = xor(B.revBit,xorA)
+                sfB = sfA + B.addFactor
                 
                 if xorB == 0:
                     C = B.leftChild
@@ -340,6 +364,7 @@ class Node():
 
                 if beta is not None:
                     xorbeta = xor(beta.revBit, xorB)
+                    sfbeta = sfB + beta.addFactor
                 """Rebalance, case LLC """
                 assert (not A is None and not B is None and not C is None)
 
@@ -386,15 +411,18 @@ class Node():
                     B.parent = F
                 recompute_heights (A)
                 recompute_heights (B.parent)
-                recompute_min_weights(A)
-                recompute_min_weights(B)
-                recompute_min_weights(B.parent)
                 nxorB = B.revBit
                 nxorA = xor(A.revBit,nxorB)
+                B.preserve_sf(sfB,0)
+                A.preserve_sf(sfA,sfB)
                 B.preserve_xor(xorB, 0)
                 A.preserve_xor(xorA, xorB)
                 if beta is not None:
+                    beta.preserve_sf(sfbeta, sfA)
                     beta.preserve_xor(xorbeta, xorA)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
+                recompute_min_weights(B.parent)
 
             else:
                 if xorA == 0:
@@ -403,6 +431,7 @@ class Node():
                     B = A.rightChild
 
                 xorB = xor(B.revBit,xorA)
+                sfB = sfA + B.addFactor
                 
                 if xorB == 0:
                     C = B.rightChild
@@ -410,6 +439,7 @@ class Node():
                     C = B.leftChild
 
                 xorC = xor(C.revBit,xorB)
+                sfC = sfB + C.addFactor
                 
                 if xorC == 0:
                     cl = C.leftChild
@@ -419,8 +449,10 @@ class Node():
                     cr = C.leftChild
 
                 if cl is not None:
+                    sfcl = sfC + cl.addFactor
                     xorcl = xor(cl.revBit, xorC)
                 if cr is not None:
+                    sfcr = sfC + cr.addFactor
                     xorcr = xor(cr.revBit, xorC)
                 """Rebalance, case LRC """
                 assert (not A is None and not B is None and not C is None)
@@ -493,10 +525,10 @@ class Node():
                    C.parent = F
                 recompute_heights (A)
                 recompute_heights (B)
-                recompute_min_weights(A)
-                recompute_min_weights(B)
-                recompute_min_weights(C)
                 nxorC = C.revBit
+                C.preserve_sf(sfC,0)
+                A.preserve_sf(sfA,sfC)
+                B.preserve_sf(sfB,sfC)
                 C.preserve_xor(xorC, 0)
                 A.preserve_xor(xorA, xorC)
                 B.preserve_xor(xorB, xorC)
@@ -504,16 +536,23 @@ class Node():
                 nxorB = xor(B.revBit,xorC)
                 if cl is not None:
                     if cl.parent == A:
+                        cl.preserve_sf(sfcl,sfA)
                         cl.preserve_xor(xorcl,xorA)
                     else:
                         assert(cl.parent == B)
+                        cl.preserve_sf(sfcl,sfB)
                         cl.preserve_xor(xorcl,xorB)
                 if cr is not None:
                     if cr.parent == A:
+                        cr.preserve_sf(sfcr,sfA)
                         cr.preserve_xor(xorcr, xorA)
                     else:
                         assert(cr.parent == B)
+                        cr.preserve_sf(sfcr,sfB)
                         cr.preserve_xor(xorcr,xorB)
+                recompute_min_weights(A)
+                recompute_min_weights(B)
+                recompute_min_weights(C)
 
     
     
@@ -723,6 +762,12 @@ class Node():
             currentNode = currentNode.parent
         return ancestor_list
 
+def recompute_all_weights (start_from_node,end_node):
+        node = start_from_node
+        while node and node != end_node:
+            node.minWeight = node.min_weight()
+            node = node.parent
+
 def recompute_min_weights (start_from_node):
         changed = True
         node = start_from_node
@@ -910,7 +955,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
             return edge.get_root()
         else:
             vRoot = vEdge.get_root()
-            smallest_edge,x2,af = vRoot.find_smallest()
+            smallest_edge,x2,sf = vRoot.find_smallest()
             if x2 == 0:
                 edge.head = smallest_edge.tail
                 smallest_edge.tail.add_edge(edge)
@@ -927,6 +972,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
 
             #assert(smallest_edge.leftChild == None)
             edge.parent = smallest_edge
+            edge.addFactor -= sf
             recompute_heights(smallest_edge)
             recompute_min_weights(smallest_edge)
             if not smallest_edge.balance() in [-1,0,1]:
@@ -939,7 +985,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
     else:
         if vEdge is None:
             uRoot = uEdge.get_root()
-            biggest_edge,x1 = uRoot.find_biggest()
+            biggest_edge,x1,sf = uRoot.find_biggest()
             if x1 == 0:
                 edge.tail = biggest_edge.head 
                 biggest_edge.head.add_edge(edge)
@@ -955,6 +1001,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
                 vVertex.add_edge(edge)
                         #assert( biggest_edge.rightChild == None)
             edge.parent = biggest_edge
+            edge.addFactor -= sf
             recompute_heights(biggest_edge)
             recompute_min_weights(biggest_edge)
             if not biggest_edge.balance() in [-1,0,1]:
@@ -984,8 +1031,9 @@ def extra_special_merge(root1, root2, xNode):
     h = shorter_tree.height
     node = taller_tree
     xorr = 0
-    (b1,x1) = smaller_tree.find_biggest()
-    (b2,x2) = bigger_tree.find_smallest()
+    sf = 0
+    (b1,x1,sf1) = smaller_tree.find_biggest()
+    (b2,x2,sf2) = bigger_tree.find_smallest()
     if x1 == 0:
         xNode.tail = b1.head 
         b1.head.add_edge(xNode) 
@@ -1004,21 +1052,28 @@ def extra_special_merge(root1, root2, xNode):
     if taller_tree == bigger_tree:
         while (node.height != h and node.height != h+1):
             xorr = xor(xorr,node.revBit)
+            sf += node.addFactor
             node = node.left(xorr)
         smaller_root = smaller_tree #while rebalancing during removal , root may change
         xNode.leftChild = smaller_root
+        xNode.leftChild.addFactor -= xNode.addFactor 
         smaller_root.parent = xNode
         xNode.rightChild = node
+        xNode.rightChild.addFactor += sf - xNode.addFactor
         #recompute_heights(xNode)
     else:
         while (node.height != h and node.height != h+1):
             xorr = xor(xorr,node.revBit)
+            sf += node.addFactor
             node = node.right(xorr)
         bigger_root = bigger_tree
         xNode.rightChild = bigger_root
+        xNode.rightChild.addFactor -= xNode.addFactor
         bigger_root.parent = xNode
         xNode.leftChild = node
+        xNode.leftChild.addFactor += sf - xNode.addFactor
         #recompute_heights(xNode)
+    xNode.addFactor -= sf
     recompute_min_weights(xNode)
     xNode.parent = None
     xNode.revBit = xorr
@@ -1216,16 +1271,17 @@ def multi_add_weight(nodeu,nodev,d):
     u = nodes[nodeu-1].outedge if nodes[nodeu - 1].outedge is not None and is_reachable_helper(nodes[nodeu-1],nodes[nodeu-1].outedge.get_other_vertex(nodes[nodeu-1]))==1 else nodes[nodeu-1].inedge
     v = nodes[nodev-1].inedge if nodes[nodev - 1].inedge is not None and is_reachable_helper(nodes[nodev-1].inedge.get_other_vertex(nodes[nodev-1]),nodes[nodev-1])==1 else nodes[nodev-1].outedge
     if u == v:
-        ur,up,upl = give_path(u)
-        sumFactor = ur.addFactor
-        for i in up:
-            if i=='L':
-                ur = ur.leftChild
-            else:
-                ur = ur.rightChild
-            sumFactor = sumFactor + ur.addFactor
-        print(u.sumFactor + u.key)
-        return 
+        u.key += d
+        recompute_all_weights(u,None)
+        #ur,up,upl = give_path(u)
+        #sumFactor = ur.addFactor
+        #for i in up:
+            #if i=='L':
+                #ur = ur.leftChild
+            #else:
+                #ur = ur.rightChild
+            #sumFactor = sumFactor + ur.addFactor
+        return
     ur,up,upl = give_path(u)
     vr,vp,vpl = give_path(v)
     assert(ur==vr)
@@ -1242,11 +1298,9 @@ def multi_add_weight(nodeu,nodev,d):
         addf=addf+currentNode.addFactor
         #minw=min(minw,currentNode.minkey+addf)
         xorr=xor(xorr,currentNode.revBit)
-    addf=addf+currentNode.addFactor
-    xorr=xor(xorr,currentNode.revBit)
     cancestor = currentNode
-    #minw=cancestor.key+addf
     cancestor.key += d
+    #minw=cancestor.key+addf
     if u0 is None:
         assert(cancestor == u)
         if v0=='L':
@@ -1255,33 +1309,36 @@ def multi_add_weight(nodeu,nodev,d):
             cancestor = cancestor.rightChild
         addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        #minw=min(minw,cancestor.key+addf)
-        cancestor.key += d
         for i in bg:
             if i=='L':
                 if xorr==1:
                     if cancestor.rightChild is not None:
-                        #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
                         cancestor.rightChild.addFactor += d
+                        #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                    cancestor.key +=d
+                    #minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==0:
                     if cancestor.leftChild is not None:
+                        cancestor.leftChild.addFactor +=d
                         #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
-                        cancestor.leftChild.addFactor += d
+                    cancestor.key += d
+                    #minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.rightChild
             addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            #minw=min(minw,cancestor.key+addf)
-            cancestor.key += d
+        cancestor.key +=d
+        #minw = min(minw,cancestor.key+addf)
         if xorr==0:                  ## finally add weight to the left or right child of v according to xor
             if cancestor.leftChild is not None:
+                cancestor.leftChild.addFactor +=d
                 #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
-                cancestor.leftChild.addFactor += d
         else :
             if cancestor.rightChild is not None:
+                cancestor.rightChild.addFactor +=d
                 #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
-                cancestor.rightChild.addFactor += d
+        recompute_all_weights(v,None)
         return
     elif v0 is None:
         assert(cancestor == v)
@@ -1291,34 +1348,37 @@ def multi_add_weight(nodeu,nodev,d):
             cancestor = cancestor.rightChild
         addf=addf+cancestor.addFactor
         xorr=xor(xorr,cancestor.revBit)
-        #minw=min(minw,cancestor.key+addf)
-        cancestor.key += d
         for i in sm:
             if i=='L':
                 if xorr==0:
                     if cancestor.rightChild is not None:
-                         #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
-                         cancestor.rightChild.addFactor += d
+                        cancestor.rightChild.addFactor +=d
+                        #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
+                    cancestor.key +=d
+                    #minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==1:
                     if cancestor.leftChild is not None:
-                        #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
                         cancestor.leftChild.addFactor += d
+                        #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
+                    cancestor.key +=d
+                    #minw=min(minw,cancestor.key+addf)
                 cancestor = cancestor.rightChild
             addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
-            #minw=min(minw,cancestor.key+addf)
-            cancestor.key += d
+        cancestor.key +=d
+        #minw=min(minw,cancestor.key+addf)
         if xorr==1:                  ## finally add weight to the left or right child of u according to xor
             if cancestor.leftChild is not None:
+                cancestor.leftChild.addFactor += d
                 #minw=min(minw,cancestor.leftChild.minWeight+addf+cancestor.leftChild.addFactor)
-                cancestor.leftChild.addFactor +=d
         else :
             if cancestor.rightChild is not None:
+                cancestor.rightChild.addFactor += d
                 #minw=min(minw,cancestor.rightChild.minWeight+addf+cancestor.rightChild.addFactor)
-                cancestor.rightChild.addFactor +=d
-        return 
+        recompute_all_weights(u,None)
+        return
     else :
         if u0=='L':
             currentNode1 = currentNode.leftChild
@@ -1333,60 +1393,66 @@ def multi_add_weight(nodeu,nodev,d):
         xorr2=xor(xorr,currentNode2.revBit)
         addf2=addf+currentNode2.addFactor
         for i in sm:
-            #minw=min(minw,currentNode1.key+addf1)
-            cancestor1.key +=d
             if i=='L':
                 if xorr1==0:
                     if currentNode1.rightChild is not None:
-                        #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
                         currentNode1.rightChild.addFactor +=d
+                        #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                    currentNode1.key +=d
+                    #minw=min(minw,currentNode1.key+addf1)
                 currentNode1 = currentNode1.leftChild
             else:
-                if xorr==1:
+                if xorr1==1:
                     if currentNode1.leftChild is not None:
-                        #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                         currentNode1.leftChild.addFactor +=d
+                        #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+                    currentNode1.key +=d
+                    #minw=min(minw,currentNode1.key+addf1)
                 currentNode1 = currentNode1.rightChild
             xorr1=xor(xorr1,currentNode1.revBit)
             addf1=addf1+currentNode1.addFactor
-        #minw=min(minw,currentNode.key+addf1)
         currentNode1.key +=d
+        #minw=min(minw,currentNode1.key+addf1)
         if xorr1==1:                  ## finally add weight to the left or right child of u according to xor
             if currentNode1.leftChild is not None:
-                #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                 currentNode1.leftChild.addFactor +=d
+                #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
         else :
             if currentNode1.rightChild is not None:
-                #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
                 currentNode1.rightChild.addFactor +=d
+                #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
         for i in bg:
-            #minw=min(minw,currentNode2.key+addf2)
-            currentNode2.key +=d
             if i=='L':
-                if xorr==1:
+                if xorr2==1:
                     if currentNode2.rightChild is not None:
-                        #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
                         currentNode2.rightChild.addFactor +=d
+                        #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                    currentNode2.key +=d
+                    #minw=min(minw,currentNode2.key+addf2)
                 currentNode2 = currentNode2.leftChild
             else:
-                if xorr==0:
+                if xorr2==0:
                     if currentNode2.leftChild is not None:
+                        currentNode2.leftChild.addFactor += d
                         #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
-                        currentNode2.leftChild.addFactor +=d
+                    currentNode2.key += d 
+                    #minw=min(minw,currentNode2.key+addf2)
                 currentNode2 = currentNode2.rightChild
             xorr2=xor(xorr2,currentNode2.revBit)
             addf2=addf2+currentNode2.addFactor
+        currentNode2.key +=d 
         #minw=min(minw,currentNode2.key+addf2)
-        currentNode2.key +=d
-        if xorr==0:                  ## finally add weight to the left or right child of v according to xor
+        if xorr2==0:                  ## finally add weight to the left or right child of v according to xor
             if currentNode2.leftChild is not None:
-                minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
-                currentNode2.leftChild.addFactor +=d
-
+                currentNode2.leftChild.addFactor +=d 
+                #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
         else :
             if currentNode2.rightChild is not None:
+                currentNode2.rightChild.addFactor +=d 
                 #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
-                currentNode2.rightChild.addFactor +=d
+        recompute_all_weights(u,cancestor)
+        recompute_all_weights(v,cancestor)
+        recompute_all_weights( cancestor , None)
         return
 
 
@@ -1674,7 +1740,7 @@ if True:
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     for t,lines  in enumerate(f):
-        #if t+2 >= 250:
+        #if t+2 >= 19:
             #pdb.set_trace()
         l = lines.split(' ')
         print ("Line no : " + str(t+2) + "\n")
@@ -1686,6 +1752,7 @@ if True:
             cut(arg[0],arg[1])
         elif fn=='A':
             multi_add_weight(arg[0],arg[1],arg[2])
+            sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='R':
             reverse_path(arg[0])
         elif fn=='M':

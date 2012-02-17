@@ -44,8 +44,8 @@ def revPath(din,dout,key):
 
 if __name__ == "__main__":
     operations = ['L','C','A','R','M','I']
-    probability = [0.4,0,0,0.2,0.2,0.2] ## Respective probabilities with which to choose these 
-    tnum = 100000                            ## Number of nodes 
+    probability = [0.4,0,0.2,0.2,0.2,0] ## Respective probabilities with which to choose these 
+    tnum = 100000                          ## Number of nodes 
     maxweight = 100                            ## Max weight to be used in link 
     maxd = 20                                   ## Argument of multiadd
     testcases = 100000                        ## Can be less than this number due to continue skips 
@@ -90,7 +90,7 @@ if __name__ == "__main__":
             node1=random.choice(list(edgein.keys()))
             node2 = choosePath(edgein,node1)
             d = random.randint(-maxd,maxd)
-            f.write("M "+str(node1) + " " +str(node2) + " " + str(d)+"\n")
+            f.write("A "+str(node1) + " " +str(node2) + " " + str(d)+"\n")
         elif op=='R':
             pass
             if edgein=={}:
