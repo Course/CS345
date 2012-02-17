@@ -1243,15 +1243,15 @@ def multi_add_weight(u,v,d):
         for i in bg:
             if i=='L':
                 if xorr==1:
-                    if cancestor.rightchild is not None:
+                    if cancestor.rightChild is not None:
                         cancestor.rightChild.addFactor += d
-                        #minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addfactor)
+                        #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==0:
                     if cancestor.leftChild is not None:
                         cancestor.leftChild.addFactor += d
-                        #minw=min(minw,currentNode2.leftchild.minweight+addf2+currentNode2.leftchild.addfactor)
+                        #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
                 cancestor = cancestor.rightChild
             #addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
@@ -1260,7 +1260,7 @@ def multi_add_weight(u,v,d):
             if cancestor.leftChild is not None:
                 cancestor.leftChild.addFactor += d
         else :
-            if cancestor.rightchild is not None:
+            if cancestor.rightChild is not None:
                 cancestor.rightChild.addFactor += d
             #minw=min(minw,cancestor.key+addf)
         #return(minw)
@@ -1278,22 +1278,22 @@ def multi_add_weight(u,v,d):
         for i in sm:
             if i=='L':
                 if xorr==0:
-                    if cancestor.rightchild is not None:
+                    if cancestor.rightChild is not None:
                         cancestor.rightChild.addFactor += d
-                        #minw=min(minw,currentNode1.rightchild.minweight+addf1+currentNode1.rightchild.addfactor)
+                        #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
                 cancestor = cancestor.leftChild
             else:
                 if xorr==1:
-                    if currentNode1.leftchild is not None:
+                    if currentNode1.leftChild is not None:
                         cancestor.leftChild.addFactor += d
-                        #minw=min(minw,currentNode1.leftchild.minweight+addf1+currentNode1.leftchild.addfactor)
+                        #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                 cancestor = cancestor.rightChild
             #addf=addf+cancestor.addFactor
             xorr=xor(xorr,cancestor.revBit)
             cancestor.key = cancestor.key + d
             #minw=min(minw,cancestor.key+addf)
         if xorr==0:                  ## finally add weight to the left or right child of u according to xor
-            if cancestor.rightchild is not None:
+            if cancestor.rightChild is not None:
                 cancestor.rightChild.addFactor += d
         else :
             if cancestor.leftChild is not None:
@@ -1317,18 +1317,18 @@ def multi_add_weight(u,v,d):
             #minw=min(minw,currentNode1.key+addf1)
             if i=='L':
                 if xorr1==0:
-                    if currentNode1.rightchild is not None:
+                    if currentNode1.rightChild is not None:
                         currentNode1.rightChild.addFactor +=d
-                        #minw=min(minw,currentNode1.rightchild.minweight+addf1+currentNode1.rightchild.addfactor)
-                currentNode1 = currentNode1.leftchild
+                        #minw=min(minw,currentNode1.rightChild.minWeight+addf1+currentNode1.rightChild.addFactor)
+                currentNode1 = currentNode1.leftChild
             else:
                 if xorr==1:
-                    if currentNode1.leftchild is not None:
+                    if currentNode1.leftChild is not None:
                         currentNode1.leftChild.addFactor +=d
-                        #minw=min(minw,currentNode1.leftchild.minweight+addf1+currentNode1.leftchild.addfactor)
-                currentNode1 = currentNode1.rightchild
-            xorr1=xor(xorr1,currentNode1.revbit)
-            #addf1=addf1+currentNode1.addfactor
+                        #minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
+                currentNode1 = currentNode1.rightChild
+            xorr1=xor(xorr1,currentNode1.revBit)
+            #addf1=addf1+currentNode1.addFactor
         currentNode1.key +=d
         #minw=min(minw,currentNode.key+addf1)
         for i in bg:
@@ -1336,18 +1336,18 @@ def multi_add_weight(u,v,d):
             #minw=min(minw,currentNode2.key+addf2)
             if i=='L':
                 if xorr==1:
-                    if currentNode2.rightchild is not None:
+                    if currentNode2.rightChild is not None:
                         currentNode2.rightChild.addFactor +=d
-                        #minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addfactor)
-                currentNode2 = currentNode2.leftchild
+                        #minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                currentNode2 = currentNode2.leftChild
             else:
                 if xorr==0:
-                    if currentNode2.leftchild is not None:
+                    if currentNode2.leftChild is not None:
                         currentNode2.leftChild.addFactor +=d
-                        #minw=min(minw,currentNode2.leftchild.minweight+addf2+currentNode2.leftchild.addfactor)
-                currentNode2 = currentNode2.rightchild
-            xorr2=xor(xorr2,currentNode2.revbit)
-            #addf2=addf2+currentNode2.addfactor
+                        #minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+                currentNode2 = currentNode2.rightChild
+            xorr2=xor(xorr2,currentNode2.revBit)
+            #addf2=addf2+currentNode2.addFactor
         currentNode2.key +=d
         #minw=min(minw,currentNode2.key+addf1)
         return
@@ -1504,7 +1504,7 @@ def report_min(nodeu,nodev):
                     if currentNode1.leftChild is not None:
                         minw=min(minw,currentNode1.leftChild.minWeight+addf1+currentNode1.leftChild.addFactor)
                 currentNode1 = currentNode1.rightChild
-            xorr1=xor(xorr1,currentNode1.revbit)
+            xorr1=xor(xorr1,currentNode1.revBit)
             addf1=addf1+currentNode1.addFactor
         minw=min(minw,currentNode.key+addf1)
         if xorr1==1:                  ## finally add weight to the left or right child of u according to xor
@@ -1517,16 +1517,16 @@ def report_min(nodeu,nodev):
             minw=min(minw,currentNode2.key+addf2)
             if i=='L':
                 if xorr==1:
-                    if currentNode2.rightchild is not None:
-                        minw=min(minw,currentNode2.rightchild.minweight+addf2+currentNode2.rightchild.addFactor)
-                currentNode2 = currentNode2.leftchild
+                    if currentNode2.rightChild is not None:
+                        minw=min(minw,currentNode2.rightChild.minWeight+addf2+currentNode2.rightChild.addFactor)
+                currentNode2 = currentNode2.leftChild
             else:
                 if xorr==0:
-                    if currentNode2.leftchild is not None:
-                        minw=min(minw,currentNode2.leftchild.minweight+addf2+currentNode2.leftchild.addfactor)
-                currentNode2 = currentNode2.rightchild
-            xorr2=xor(xorr2,currentNode2.revbit)
-            addf2=addf2+currentNode2.addfactor
+                    if currentNode2.leftChild is not None:
+                        minw=min(minw,currentNode2.leftChild.minWeight+addf2+currentNode2.leftChild.addFactor)
+                currentNode2 = currentNode2.rightChild
+            xorr2=xor(xorr2,currentNode2.revBit)
+            addf2=addf2+currentNode2.addFactor
         minw=min(minw,currentNode2.key+addf2)
         if xorr==0:                  ## finally add weight to the left or right child of v according to xor
             if currentNode2.leftChild is not None:
