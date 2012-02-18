@@ -124,18 +124,20 @@ def print_p(i):
 
 if __name__ == "__main__":    
     avl=[]
-    f = open("testcases.txt",'r')
-    nodes = int(f.readline())
+    nodes = int(input())
+    #f = open("testcases.txt",'r')
+    #nodes = int(f.readline())
     for i in range(nodes):
         avl.append(Node(i))
     #print_path(avl)
     t0=time.time()
-    for t,lines in enumerate(f):
-        if t==int(sys.argv[1]):
-            break
+    #for t,lines in enumerate(f):
+        #if t==int(sys.argv[1]):
+            #break
         #if t+2 >= 233:
             #pdb.set_trace()
         #print ("Line no : " + str(t+2) + "\n")
+    for lines in sys.stdin :
         l = lines.split(' ')
         fn = l[0]
         arg = [int(i) for i in l[1:]]
@@ -155,5 +157,5 @@ if __name__ == "__main__":
             print ("Unrecognised input")
             break
         #print_path(avl)
-    print("List Time =" + str(time.time() - t0))
+    #print("List Time =" + str(time.time() - t0))
 

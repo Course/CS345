@@ -2149,16 +2149,18 @@ def xor(a,b):
 nodes = []
 
 if __name__ == "__main__":
-    f = open("testcases.txt",'r')
-    noofnodes = int(f.readline())
+    noofnodes = int(input())
+    #f = open("testcases.txt",'r')
+    #noofnodes = int(f.readline())
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     t0 = time.time()
-    for t,lines  in enumerate(f):
-        if t==int(sys.argv[1]):
-            break
+    #for t,lines  in enumerate(f):
+        #if t==int(sys.argv[1]):
+            #break
         #if t+2 >= 194:
             #pdb.set_trace()
+    for lines in sys.stdin: 
         l = lines.split(' ')
         #print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
@@ -2187,5 +2189,5 @@ if __name__ == "__main__":
         else:
             print ("Unrecognised input")
             break
-    print("AVL Time =" + str(time.time() - t0))
+    #print("AVL Time =" + str(time.time() - t0))
 
