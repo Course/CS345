@@ -3,6 +3,8 @@ from __future__ import print_function
 import random, math
 import sys
 import ipdb as pdb
+uidd= 0 
+udict = {}
 def random_data_generator (max_r):
     for i in xrange(max_r):
         yield random.randint(0, max_r)
@@ -34,6 +36,9 @@ class Vertex():
 
 class Node():
     def __init__(self, key):
+        global uidd 
+        self.uid = uidd 
+        uidd +=1
         self.key = key
         self.tail = None
         self.head = None
@@ -76,6 +81,7 @@ class Node():
         if self.rightChild:
             minW = min(minW,self.rightChild.minWeight+self.rightChild.addFactor)
         return minW
+    
 
     def max_children_height(self):
         if self.leftChild and self.rightChild:
@@ -872,10 +878,15 @@ def sanity_check(start_node, *args):
 
 
 def sanity_check_helper (start_node, *args):
+        global udict 
         if len(args) == 0:
             node = start_node
         else:
             node = args[0]
+        if node is not None:
+            ht = udict[node.uid]
+            if node.head not in ht or node.tail not in ht:
+                raise Exception(" Node  " + str(node) + " vertex changed from " + str(ht) + " to "  + str(node.head) + "," + str(node.tail))
         if node is not None and (node.tail is None or node.head is None):
             raise Exception ("Node:" + str(node) + " Head : "+ str(node.head) +" , tail : "+str(node.tail))
         if (node  is None) or (node.is_leaf() and node.parent is None ):
@@ -886,7 +897,7 @@ def sanity_check_helper (start_node, *args):
                 raise Exception ("Invalid height for node " + str(node) + ": " + str(node.height) + " instead of " + str(node.max_children_height() + 1) + "!" )
             new_min_weight = node.min_weight()
             if node.minWeight != new_min_weight:
-                raise Exception ("Invalid min weight for node " + str(node) + ": " + str(node.minWeight) + " instead of " + str(new_min_weight) + "!")
+                raise Exception ("Invalid min weight for node " + str(node) +"("+str(node.tail)+","+str(node.head)+")"+ ": " + str(node.minWeight) + " instead of " + str(new_min_weight) + "!")
 
             balFactor = node.balance()
             #Test the balance factor
@@ -963,8 +974,9 @@ def special_merge(uEdge,vEdge,edge):
         if vEdge is None:
             #edge.find_smallest()
             #edge.find_biggest()
-            return edge.get_root()
+            return edge
         else:
+            assert(vEdge is not None)
             vRoot = vEdge.get_root()
             smallest_edge,x2,sf = vRoot.find_smallest()
             if x2 == 0:
@@ -983,7 +995,7 @@ def special_merge(uEdge,vEdge,edge):
             recompute_heights(edge)
             assert( edge.height == 0)
             recompute_heights(smallest_edge)
-            recompute_min_weights(smallest_edge)
+            recompute_all_weights(edge,None)
             if not smallest_edge.balance() in [-1,0,1]:
                 smallest_edge.rebalance()
             for node in smallest_edge.list_ancestors():
@@ -1011,7 +1023,7 @@ def special_merge(uEdge,vEdge,edge):
             recompute_heights(edge)
             assert( edge.height == 0)
             recompute_heights(biggest_edge)
-            recompute_min_weights(biggest_edge)
+            recompute_all_weights(edge,None)
             if not biggest_edge.balance() in [-1,0,1]:
                 biggest_edge.rebalance()
             for node in biggest_edge.list_ancestors():
@@ -1109,7 +1121,7 @@ def link_special_merge(uEdge,vEdge,edge,uVertex,vVertex):
                 #uEdge.get_root().toPNG("u.jpeg")
                 #vEdge.get_root().toPNG("v.jpeg")
                 finaltree = extra_special_merge(uEdge.get_root(),vEdge.get_root(), edge)
-                sanity_check(finaltree)
+                #sanity_check(finaltree)
                 #finaltree.toPNG("r.jpeg")
 
 def split_extra_special_merge(root1, root2, xNode):
@@ -1238,15 +1250,16 @@ def extra_special_merge(root1, root2, xNode):
     # dont delete any node
 
 def rbset(node):
-    if node.revBit == 0 :
-        return node 
-    else: 
-        h = node.head 
-        t = node.tail 
-        node.head = t 
-        node.tail = h 
-        node.revBit = 0 
-        return node 
+    assert(node.revBit==1)
+    h = node.head 
+    t = node.tail 
+    node.head = t 
+    node.tail = h 
+    node.revBit = 0
+    node.leftChild,node.rightChild = node.rightChild,node.leftChild
+    rbinv(node.leftChild)
+    rbinv(node.rightChild)
+
 def rbinv(node):
     if node is None:
         return node
@@ -1254,7 +1267,7 @@ def rbinv(node):
         node.revBit =0 
     else :
         node.revBit =1 
-    return Node
+    return node
 
 # split :: avl -> node -> (avl,avl)
 def split(root,path,node): # splits an avl tree into 2 trees with all elements of 1st < node and all elements of 2nd greater than nodes . O(log n)
@@ -1269,7 +1282,11 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
     bgmid = None 
     assert(path != [])
     for d in path:
+        if currentNode.revBit == 1:
+            rbset(currentNode)
+            d = 'L' if d == 'R' else 'R'
         xorr = xor(xorr,currentNode.revBit)
+        assert(xorr==0)
         sf += currentNode.addFactor
         assert(currentNode is not None)
         if xorr == 0:
@@ -1286,7 +1303,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                     bgtree = special_merge(currentNode.rightChild,bgtree,bgmid)
                 else :
                     bgtree = currentNode.rightChild
-                bgmid = rbset(currentNode)
+                bgmid = currentNode
                 currentNode = currentNode.leftChild
                 if bgmid.leftChild:
                     #bgmid.leftChild.parent = None
@@ -1303,8 +1320,8 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                         pass 
                     bgmid.parent = None
                 bgmid.height = 0
+                bgmid.key += sf
                 bgmid.minWeight = bgmid.key
-                bgmid.key += sf - bgmid.addFactor
                 bgmid.addFactor = 0
                 bgmid.revBit = 0
             else :
@@ -1320,7 +1337,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                     smtree = special_merge(smtree,currentNode.leftChild,smmid)
                 else :
                     smtree = currentNode.leftChild
-                smmid = rbset(currentNode)
+                smmid = currentNode
                 currentNode = currentNode.rightChild
                 if smmid.leftChild:
                     smmid.leftChild = None
@@ -1335,25 +1352,27 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                         pass
                     smmid.parent = None
                 smmid.height = 0
+                smmid.key += sf 
                 smmid.minWeight = smmid.key
-                smmid.key += sf - smmid.addFactor
                 smmid.addFactor = 0
                 smmid.revBit = 0
         else :
+            assert(False)
             if d == 'L':
                 if currentNode.rightChild:
+                    rbinv(currentNode.rightChild)
                     currentNode.rightChild.parent = None
                     currentNode.rightChild.addFactor += sf
-                if bgtree:
+                if smtree:
                     #if currentNode.rightChild :
                         #smmid.head = None
                         #smmid.tail = None
                     #else :
                         #smmid.tail = None
-                    smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+                    smtree = special_merge(smtree,currentNode.rightChild,smmid)
                 else :
-                    smtree = rbinv(currentNode.rightChild)
-                smmid = rbset(currentNode)
+                    smtree = currentNode.rightChild
+                smmid = currentNode
                 currentNode = currentNode.leftChild
                 if smmid.leftChild:
                     smmid.leftChild = None
@@ -1368,12 +1387,13 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                         pass 
                 smmid.parent = None
                 smmid.height = 0
+                smmid.key += sf
                 smmid.minWeight = smmid.key
-                smmid.key += sf - smmid.addFactor
                 smmid.addFactor = 0
             else :
                 if currentNode.leftChild:
                     currentNode.leftChild.parent = None
+                    rbinv(currentNode.leftChild)
                     currentNode.leftChild.addFactor += sf
                 if bgtree:
                     #if currentNode.leftChild :
@@ -1381,10 +1401,10 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                         #bgmid.tail = None
                     #else :
                         #bgmid.head = None
-                    bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
+                    bgtree = special_merge(currentNode.leftChild,bgtree,bgmid)
                 else :
-                    bgtree = rbinv(currentNode.leftChild)
-                bgmid = rbset(currentNode)
+                    bgtree = currentNode.leftChild
+                bgmid = currentNode
                 currentNode = currentNode.rightChild
                 if bgmid.leftChild:
                     bgmid.leftChild = None
@@ -1399,8 +1419,8 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                         pass 
                     bgmid.parent = None
                 bgmid.height = 0
+                bgmid.key += sf
                 bgmid.minWeight = bgmid.key
-                bgmid.key += sf - bgmid.addFactor
                 bgmid.addFactor = 0
     xorr = xor(xorr,currentNode.revBit)
     sf += currentNode.addFactor
@@ -1458,11 +1478,13 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
                 #return
             if currentNode.leftChild:
                 currentNode.leftChild.parent = None
-            bgtree = special_merge(rbinv(currentNode.leftChild),bgtree,bgmid)
+                rbinv(currentNode.leftChild)
+            bgtree = special_merge(currentNode.leftChild,bgtree,bgmid)
             currentNode.leftChild = None
         else : 
             if currentNode.leftChild :
                 currentNode.leftChild.parent = None
+                rbinv(currentNode.leftChild)
                 currentNode.leftChild = None
         if smmid:
             #if currentNode.rightChild and bgtree:
@@ -1475,11 +1497,13 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
             #else :
                 #return
             if currentNode.rightChild:
+                rbinv(currentNode.rightChild)
                 currentNode.rightChild.parent = None
-            smtree = special_merge(smtree,rbinv(currentNode.rightChild),smmid)
+            smtree = special_merge(smtree,currentNode.rightChild,smmid)
             currentNode.rightChild = None
         else :
             if currentNode.rightChild:
+                rbinv(currentNode.rightChild)
                 currentNode.rightChild.parent = None
                 currentNode.rightChild = None
     #if smtree:
@@ -1492,6 +1516,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
 # link 
 def link(u,v,w):
     global nodes
+    global udict 
     uVertex = nodes[u-1]
     vVertex = nodes[v-1]
     if uVertex == vVertex:
@@ -1503,6 +1528,7 @@ def link(u,v,w):
     edge = Node(w)
     edge.minWeight = edge.key
     link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
+    udict[edge.uid]=(edge.head,edge.tail)
     #print_path(u)
 
    #uNode.get_root().toPNG("u.png")
@@ -1534,6 +1560,7 @@ def print_path(u):
 
 # cut 
 def cut(u,v):
+    global udict 
     global nodes
     uVertex = nodes[u-1]
     vVertex = nodes[v-1]
@@ -1550,10 +1577,14 @@ def cut(u,v):
             if path == []:
                 if uEdge.leftChild :
                     uEdge.leftChild.addFactor += uEdge.addFactor 
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.leftChild)
                 else:
                     pass
                 if uEdge.rightChild :
                     uEdge.rightChild.addFactor += uEdge.addFactor
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.rightChild)
                 else:
                     pass
             else :
@@ -1568,10 +1599,14 @@ def cut(u,v):
             if path == []:
                 if uEdge.leftChild :
                     uEdge.leftChild.addFactor += uEdge.addFactor 
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.leftChild)
                 else:
                     pass
                 if uEdge.rightChild :
                     uEdge.rightChild.addFactor += uEdge.addFactor
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.rightChild)
                 else:
                     pass
             else:
@@ -1585,9 +1620,13 @@ def cut(u,v):
             (rt,path,length)=give_path(uEdge)
             if path == []:
                 if uEdge.leftChild :
-                    uEdge.leftChild.addFactor += uEdge.addFactor 
+                    uEdge.leftChild.addFactor += uEdge.addFactor
+                    if uEdge.revBit == 1:
+                         rbinv(uEdge.leftChild)
                 if uEdge.rightChild :
                     uEdge.rightChild.addFactor += uEdge.addFactor
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.rightChild)
             else :
                 split(rt,path, uEdge)
             #uEdge.tail = None
@@ -1600,7 +1639,11 @@ def cut(u,v):
             if path == []:
                 if uEdge.leftChild :
                     uEdge.leftChild.addFactor += uEdge.addFactor 
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.leftChild)
                 if uEdge.rightChild :
+                    if uEdge.revBit == 1:
+                        rbinv(uEdge.rightChild)
                     uEdge.rightChild.addFactor += uEdge.addFactor
             else :
                 split(rt,path, uEdge)
@@ -1626,6 +1669,7 @@ def cut(u,v):
     if uEdge.rightChild:
         uEdge.rightChild.parent = None
         uEdge.rightChild = None
+    udict.pop(uEdge.uid)
     del uEdge
     #sanity_check(vVertex.outedge.get_root())
     #sanity_check(uVertex.inedge.get_root())
@@ -2134,7 +2178,8 @@ if True:
             sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='R':
             reverse_path(arg[0])
-            #sanity_check(nodes[arg[0]-1].g)
+            if nodes[arg[0]-1].get_edge():
+                sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='M':
             print (report_min(arg[0],arg[1]))
         elif fn=='I':
