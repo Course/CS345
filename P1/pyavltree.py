@@ -2,7 +2,6 @@
 from __future__ import print_function
 import random, math
 import sys, time
-import ipdb as pdb
 udict = {}
 def random_data_generator (max_r):
     for i in xrange(max_r):
@@ -2149,14 +2148,15 @@ def xor(a,b):
 
 nodes = []
 
-if True:
-#if __name__ == "__main__":
+if __name__ == "__main__":
     f = open("testcases.txt",'r')
     noofnodes = int(f.readline())
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
     t0 = time.time()
     for t,lines  in enumerate(f):
+        if t==int(sys.argv[1]):
+            break
         #if t+2 >= 194:
             #pdb.set_trace()
         l = lines.split(' ')

@@ -1,6 +1,5 @@
 #!/bin/python 
 import sys,time 
-import ipdb as pdb 
 
 # Linked list implementation of dynamic paths 
 class Node():
@@ -132,6 +131,8 @@ if __name__ == "__main__":
     #print_path(avl)
     t0=time.time()
     for t,lines in enumerate(f):
+        if t==int(sys.argv[1]):
+            break
         #if t+2 >= 233:
             #pdb.set_trace()
         #print ("Line no : " + str(t+2) + "\n")
