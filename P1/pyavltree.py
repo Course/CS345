@@ -1,9 +1,8 @@
 #!/bin/python
 from __future__ import print_function
 import random, math
-import sys
+import sys, time
 import ipdb as pdb
-uidd= 0 
 udict = {}
 def random_data_generator (max_r):
     for i in xrange(max_r):
@@ -36,9 +35,9 @@ class Vertex():
 
 class Node():
     def __init__(self, key):
-        global uidd 
-        self.uid = uidd 
-        uidd +=1
+        #global uidd 
+        #self.uid = uidd 
+        #uidd +=1
         self.key = key
         self.tail = None
         self.head = None
@@ -1516,7 +1515,7 @@ def split(root,path,node): # splits an avl tree into 2 trees with all elements o
 # link 
 def link(u,v,w):
     global nodes
-    global udict 
+    #global udict 
     uVertex = nodes[u-1]
     vVertex = nodes[v-1]
     if uVertex == vVertex:
@@ -1528,7 +1527,7 @@ def link(u,v,w):
     edge = Node(w)
     edge.minWeight = edge.key
     link_special_merge(uEdge,vEdge, edge, uVertex, vVertex)
-    udict[edge.uid]=(edge.head,edge.tail)
+    #udict[edge.uid]=(edge.head,edge.tail)
     #print_path(u)
 
    #uNode.get_root().toPNG("u.png")
@@ -1560,7 +1559,7 @@ def print_path(u):
 
 # cut 
 def cut(u,v):
-    global udict 
+    #global udict 
     global nodes
     uVertex = nodes[u-1]
     vVertex = nodes[v-1]
@@ -1669,7 +1668,7 @@ def cut(u,v):
     if uEdge.rightChild:
         uEdge.rightChild.parent = None
         uEdge.rightChild = None
-    udict.pop(uEdge.uid)
+    #udict.pop(uEdge.uid)
     del uEdge
     #sanity_check(vVertex.outedge.get_root())
     #sanity_check(uVertex.inedge.get_root())
@@ -2156,30 +2155,31 @@ if True:
     noofnodes = int(f.readline())
     for i in range(noofnodes):
         nodes.append(Vertex(i+1))
+    t0 = time.time()
     for t,lines  in enumerate(f):
         #if t+2 >= 194:
             #pdb.set_trace()
         l = lines.split(' ')
-        print ("Line no : " + str(t+2) + "\n")
+        #print ("Line no : " + str(t+2) + "\n")
         fn = l[0]
         arg = [int(i) for i in l[1:]]
         if fn=='L':
             link(arg[0],arg[1],arg[2])
-            sanity_check(nodes[arg[0]-1].get_edge().get_root())
-            sanity_check(nodes[arg[1]-1].get_edge().get_root())
+            #sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            #sanity_check(nodes[arg[1]-1].get_edge().get_root())
         elif fn=='C':
             cut(arg[0],arg[1])
-            if nodes[arg[0]-1].get_edge():
-                sanity_check(nodes[arg[0]-1].get_edge().get_root())
-            if nodes[arg[1]-1].get_edge():
-                sanity_check(nodes[arg[1]-1].get_edge().get_root())
+            #if nodes[arg[0]-1].get_edge():
+                #sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            #if nodes[arg[1]-1].get_edge():
+                #sanity_check(nodes[arg[1]-1].get_edge().get_root())
         elif fn=='A':
             multi_add_weight(arg[0],arg[1],arg[2])
-            sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            #sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='R':
             reverse_path(arg[0])
-            if nodes[arg[0]-1].get_edge():
-                sanity_check(nodes[arg[0]-1].get_edge().get_root())
+            #if nodes[arg[0]-1].get_edge():
+                #sanity_check(nodes[arg[0]-1].get_edge().get_root())
         elif fn=='M':
             print (report_min(arg[0],arg[1]))
         elif fn=='I':
@@ -2187,4 +2187,5 @@ if True:
         else:
             print ("Unrecognised input")
             break
+    print("AVL Time =" + str(time.time() - t0))
 

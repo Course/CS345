@@ -48,7 +48,7 @@ if __name__ == "__main__":
     tnum = 1000000                          ## Number of nodes 
     maxweight = 100                            ## Max weight to be used in link 
     maxd = 20                                   ## Argument of multiadd
-    testcases = 100000                       ## Can be less than this number due to continue skips 
+    testcases = 1000000                       ## Can be less than this number due to continue skips 
     testfile = 'testcases.txt'                  ## Test case stored here 
     edgein = {}
     edgeout = {}
