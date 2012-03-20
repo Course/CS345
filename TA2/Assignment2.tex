@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage[lined,boxed]{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{color}
+\input{rgb}
+\newcommand{\handout}[5]{
+  \noindent
+  \begin{center}
+  \framebox{
+    \vbox{
+      \hbox to 5.78in { {\bf CS345 : Algorithms II } \hfill #2 }
+      \vspace{4mm}
+      \hbox to 5.78in { {\Large \hfill #5  \hfill} }
+      \vspace{2mm}
+      \hbox to 5.78in { {\em #3 \hfill #4} }
+    }
+  }
+  \end{center}
+  \vspace*{4mm}
+}
+
+\newcommand{\lecture}[4]{\handout{#1}{#2}{#3}{}{#1}}
+
+
+\newcommand{\TT}[1]{\textsc{#1}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{exercise}[theorem]{\color{DarkBlue}{\bf Exercise}}
+\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\topmargin 0pt
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 8.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\parindent 0in
+\parskip 1.5ex
+\title{Assignment 1}
+\author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
+\begin{document}
+\maketitle
+
+
+\section*{Question 4}
+\begin{lemma}
+Any edge of the graph (This does not include the edges added because of new vertex .) which is not present in the old MST is also not present in the new MST. 
+\end{lemma}
+\begin{proof}
+Suppose (x,y) is an edge which is not present in the old MST. So if we include (x,y) in the old MST we get a cycle . Now if we remove the maximum weight edge of the  cycle we must get a MST again . If this maximum weight   edge is not (x,y) then the weight of the tree after its removal will decrease as compared to MST in which (x,y) was not present and hence contradiction . We keep on adding these edges and every time we form a cycle of which this edge is the maximum weight edge. So for every edge (x,y) not present in the MST of graph G there exist a cycle of which it is the maximum weight edge .  \\
+This property will remain true even after adding the new edges from a new vertex u because all such new edges are not the part of these cycles  . So all those edges again will not be a part of the new MST by cycle property on all such cycles . 
+\end{proof}
+
+
+\begin{algorithm}
+$\backslash \backslash $ {\tt{T(V,E) is the minimum spanning tree of the older graph}} \\
+$visited[v] \leftarrow True$ \\
+$dfn[v] \leftarrow count $ \\
+$count \leftarrow count + 1 $ \\
+$\backslash \backslash $ {\tt{u is the the new vertex added}} \\
+$maxEdge \leftarrow (u,v) $ \\
+$T' \leftarrow T' \cup (u,v)$ \\
+\ForEach{$(v,x) \in E$ }{
+    \If{$visited[x] = False$}{
+    	$parent[x] \leftarrow u$ \\
+    	$maxEdgeToU \leftarrow dfs(x)$ \\
+    	$T' \leftarrow T' \cup {(v,x)}$ \\
+    	$maxEdgeToU \leftarrow$ edge with maximum wt in $\{maxEdgeToU,(v,x)\}$ \\
+    	\eIf{$wt(maxEdge) > wt(maxEdgeToU)$}{
+    	$T' \leftarrow T' \backslash \{maxEdge\}$ \\
+    	$maxEdge \leftarrow maxEdgeToU$
+    	}
+    	{
+    	$T' \leftarrow T' \backslash \{maxEdgeToU\}$ \\
+    	}
+    	}
+    }
+    return $maxEdge$
+\caption{\textsc{dfs(\(v\)) }}
+\label{chord_intersection}
+\end{algorithm}
+
+\subsection*{Proof of Correctness :}
+We are using cycle property . Maximum weight edge of a cycle is not present in the minimum spanning tree. \\
+Let u be the new vertex added . We solve the problem from using the following recursive argument . \\
+Whenever a dfs on vertex v terminates we have the minimum spanning tree of the graph including that subtree and vertex u . We also return the maximum weight edge on the path from v to u in that mst. We have to preserve this property during dfs.   \\
+Now consider the dfs of a vertex v'. Let p be the children of v' in the old MST. 
+\begin{itemize}
+\item After dfs(p) is completed we have the maximum weight edge on the path from p to u , Edge (v',u) and  current maximum weight edge on the path from v' to u .
+\item These edges together form a cycle so we remove the maximum weight edge of this cycle . There are essentially now two paths from v' to u and we know the maximum weight edge of both the paths . 
+\item We also need to find the new maximum weight edge on the path from v' to u. One path is broken when we removed the maximum weight edge . So the new maximum weight edge is the maximum weight edge of the other path . The thing to note is now we again have exactly one path from v' to u. This  ensures that all the vertices have a path to u and hence the graph (new MST here) remains connected whenever an edge is removed.
+\item Total number of edges in the new graph is (n + n-1 =) 2n -1.  Initially whenever we start a dfs on a vertex we include the edge of that vertex to u . So considering this We add total n vertices . Now whenever we include an edge from the old MST we remove an edge from this such that all the vertices are still connected . Thus the number of edges in the new  spanning tree is n and the proof that it is indeed minimum spanning tree is from the cycle property . 
+\end{itemize}
+
+
+
+\pagebreak
+
+\end{document}
