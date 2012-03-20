@@ -27,6 +27,8 @@ def link(u,v,w):
 
 # Cut O(1)
 def cut(u,v):
+    assert(is_reachable(u,v)==1)
+    assert(u.next == v)
     u.next = None 
     v.parent = None 
     u.nextweight = 0 
@@ -68,10 +70,9 @@ def is_reachable(u,v):
     tail = v
     while(head != None):
         if head == tail :
-            #print("1")
-            return 
+            return(1)
         head = head.next
-    #print("0")
+    return(0)
 
 # report_min O(n)
 def report_min(u,v):
@@ -83,7 +84,7 @@ def report_min(u,v):
     while(head.next != tail):
         head = head.next 
         minim = min(minim,head.nextweight)
-    #print(minim)
+    print(minim)
 
 # Helpers 
 def findRoot(node):
@@ -100,26 +101,43 @@ def print_path(avl):
         node = findRoot(i)
         if  check[node.key] == 1 :
             check[node.key]=0
-            print(node.key+1,end=" ")
+            print(node.key+1,)
             while(node.next != None):
-                print("--- " + str(node.nextweight) + " --->",end=" ")
-                print(node.next.key+1,end=" ")
+                print("--- " + str(node.nextweight) + " --->",)
+                print(node.next.key+1,)
                 check[node.next.key]=0
                 node = node.next
             print()
         
     print("#########################################")
 
+def print_p(i):
+    node = findRoot(i)
+    print(node.key+1,)
+    while(node.next != None):
+        print("--- " + str(node.nextweight) + " --->",)
+        print(node.next.key+1,)
+        node = node.next
+    print()
+
+    
+
 if __name__ == "__main__":    
-    nodes = int(input())
     avl=[]
+    nodes = int(input())
+    #f = open("testcases.txt",'r')
+    #nodes = int(f.readline())
     for i in range(nodes):
         avl.append(Node(i))
     #print_path(avl)
-    j=1
     t0=time.time()
+    #for t,lines in enumerate(f):
+        #if t==int(sys.argv[1]):
+            #break
+        #if t+2 >= 233:
+            #pdb.set_trace()
+        #print ("Line no : " + str(t+2) + "\n")
     for lines in sys.stdin :
-        #print("Test case no. ",j)
         l = lines.split(' ')
         fn = l[0]
         arg = [int(i) for i in l[1:]]
@@ -134,11 +152,10 @@ if __name__ == "__main__":
         elif fn=='M':
             report_min(avl[arg[0]-1],avl[arg[1]-1])
         elif fn=='I':
-            is_reachable(avl[arg[0]-1],avl[arg[1]-1])
+            print(is_reachable(avl[arg[0]-1],avl[arg[1]-1]))
         else:
             print ("Unrecognised input")
             break
-        j+=1
         #print_path(avl)
-    print("Time =",time.time() - t0)
+    #print("List Time =" + str(time.time() - t0))
 

@@ -44,15 +44,15 @@ def revPath(din,dout,key):
 
 if __name__ == "__main__":
     operations = ['L','C','A','R','M','I']
-    probability = [0.8,0,0,0.2,0,0] ## Respective probabilities with which to choose these 
-    tnum = 100                              ## Number of nodes 
-    maxweight = 1000                            ## Max weight to be used in link 
+    probability = [0.4,0.15,0.1,0.1,0.15,0.1] ## Respective probabilities with which to choose these 
+    tnum = 10000                           ## Number of nodes 
+    maxweight = 100                            ## Max weight to be used in link 
     maxd = 20                                   ## Argument of multiadd
-    testcases = 100                           ## Can be less than this number due to continue skips 
+    testcases = 100000                       ## Can be less than this number due to continue skips 
     testfile = 'testcases.txt'                  ## Test case stored here 
     edgein = {}
     edgeout = {}
-    f = open(str(testcases)+testfile,'w')
+    f = open(testfile,'w')
     f.write(str(tnum)+"\n")
     for i in range(testcases):    
         #assert(set(edgein.keys())==set(edgeout.values()))
@@ -90,7 +90,7 @@ if __name__ == "__main__":
             node1=random.choice(list(edgein.keys()))
             node2 = choosePath(edgein,node1)
             d = random.randint(-maxd,maxd)
-            f.write("M "+str(node1) + " " +str(node2) + " " + str(d)+"\n")
+            f.write("A "+str(node1) + " " +str(node2) + " " + str(d)+"\n")
         elif op=='R':
             pass
             if edgein=={}:
@@ -107,4 +107,6 @@ if __name__ == "__main__":
         else :
             node1 = random.randint(1,tnum)
             node2 = random.randint(1,tnum)
+            if node1 == node2:
+                continue
             f.write("I "+str(node1) + " " +str(node2)+"\n")
