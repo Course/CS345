@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage{latexsym}
-\usepackage[lined,boxed]{algorithm2e}
+\usepackage[vlined,ruled]{algorithm2e}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
@@ -57,7 +57,111 @@
 \begin{document}
 \maketitle
 
+\section*{Question 3}
+\begin{algorithm}[h]
+$E'\leftarrow \emptyset$\;
+\While{there is any vertex left in the graph}{
+Pick any vertex $v$ arbitrarily\;
+Grow a BFS tree starting from $v$, level by level, and stop as soon as \textbf{number of vertices on the last level $\leq$ total number of vertices till second last level * $n^{\frac{1}{k}}$}\;
+Let the BFS tree be grown to level $i$ in this manner\;
+Add to $E'$ all those edges of the BFS tree upto level \textbf{i}\;
+Remove all vertices of the BFS tree upto level \textbf{i-1} from the graph\;
+}
+return $(V,E')$\;
+\caption{The skeleton of an Algorithm for computing $(2k-1)$-spanner of a graph $G$}
+\label{skeleton}
+\end{algorithm}
+\begin{lemma}
+The height of BFS tree can not be greater than  k.
+\end{lemma}
+\begin{proof}
+If height of the tree becomes greater than k , it means at each level the number of vertices grow by a factor more than $n^{\frac{1}{k}}$. \\ 
+Let $T(i)$ be the number of vertices till level $i$.
+\begin{align*}
+T(i) &= \underbrace{T(i-1)}_{\text{total vertices till level i-1}} + \underbrace{T(i-1)*(n^{\frac{1}{k}})}_{\text{vertices at level i}} \\
+T(k) &= T(k-1) (1 + n^{\frac{1}{k}}) \\
+	&= T(0) (1 + n^{\frac{1}{k}}) \\
+	&= (1 + n^{\frac{1}{k}})^{k} \\
+	&\geq 1 + n 
+\end{align*}
+So bfs traversal stops before level k due to the following two cases
+\begin{enumerate}
+\item No more vertices to traverse in the bfs tree. 
+\item We find a level i ($\leq k$) such that $T(i) - T(i-1) \leq n^\frac{1}{k}$ 
+\end{enumerate}
+\end{proof}
+\begin{lemma}
+For each edge removed there is a path of length $(2k-1)$ in the spanner. ($k>1$)
+\end{lemma}
+\begin{proof}
+Since the height of bfs tree is never greater than k and any edge not present in the bfs tree is removed. \\
+Let $v$ be the root of the tree and height of the bfs tree thus found be $l (\leq k)$.	 \\
+Suppose the edge removed is $(x,y)$ . Then one of $x$ and $y$ should be at a level less than $i$ and other at a level less than or equal to $i$.\\
+Without loss of generality let  level of $x$ be $p(< i)$ and level of $y$ be $q(\leq i)$ .  Then we need to show that there is a path from $x$ to $y$ of length not more than $2k-1$. \\
+Consider the path from $x$ to $v$ to $y$ . Its length is 
+\begin{align*}
+length &= p+q \\
+	&\leq (l-1) + l \\
+	&\leq (k-1) + k \\
+length	&\leq 2k -1
+\end{align*}
+So there exist a path from $x$ to $y$ of length $\leq$ 2k-1
+\end{proof}
+\begin{lemma} $\delta'(u,v) \le (2k-1) \delta(u,v) $
+\end{lemma}
+\begin{proof}
+Consider the path from $u$ to $v$ in the old graph . Let it be 
+\[ (u=x_1 , x_2 , \ldots , x_m=v)
+\]
+Proof by recursion on edges on the path \\
+Base Case : $(u,v)$ is an edge then by previous lemma :
+\[
+\delta'(u,v) \leq (2k-1) \delta(u,v) 
+\]
+Induction : 
+Let the number of edges on the path be w.
+Now consider an edge between $x_1$ and $x_2$ . If it is not present in the spanner then by previous lemma we have a path of length less than (2k-1) between $x_1$ and $x_2$.  So 
+\[\delta'(x_1,x_2) \leq (2k-1)
+\]
+\[
+\delta'(u=x_1,v) = \delta'(x_1,x_2) +   \delta'(x_{2},v)
+\]
+\[
+\delta'(u,v) \leq (2k-1) +   \delta'(x_{2},v)
+\]
+Since number of edges on the path $(x_{2},v)$ are less than w so using induction hypothesis :
+\[
+\delta'(u,v) \leq (2k-1) +   (2k-1)\delta(x_{2},v) 
+\]
+\[
+\delta'(u,v) \le (2k-1) \delta(u,v) 
+\]
 
+
+
+\end{proof}
+\begin{lemma}
+Size of the spanner computed by the algorithm is $O(n^{1+1/k})$.
+\end{lemma}
+\begin{proof}
+We are adding all the edges of the BFS tree upto level i-1 . The extra edges we are adding is less than  $T(i) * n^{\frac{1}{k}}$. \\
+Now consider a BFS in which m vertices are removed after its completion. 
+So edges added in the spanner due to this BFs is 
+\begin{align*}
+\underbrace{m-1}_{\text{bfs tree edges}} + \underbrace{m*n^{\frac{1}{k}}}_{\text{Extra edges added}}
+\end{align*}
+Consider all the BFS which algorithm runs and let $(m_1,m_2, \ldots m_p)$ be the vertices removed in each of them then 
+$m_1 + m_2 + \ldots m_p = n$ as the vertices removed are disjoint and together they consist of the whole graph . \\
+So total number of edges added are 
+\begin{align*}
+edges &= m_{1} -1 + m_{1}*n^\frac{1}{k} + m_{2} -1 + m_{2}*n^\frac{1}{k} + \ldots m_{p} -1 + m_{p}*n^\frac{1}{k} \\
+&= (m_{1} + m_{2} + \ldots m_{p})*n^{\frac{1}{k}} - p  \\
+&= n*n^{\frac{1}{k}} - p  \\
+&= n^{1+\frac{1}{k}} - p  \\
+&= O(n^{1+\frac{1}{k}})
+\end{align*}
+\end{proof}
+\pagebreak
 \section*{Question 4}
 \begin{lemma}
 Any edge of the graph (This does not include the edges added because of new vertex .) which is not present in the old MST is also not present in the new MST. 
