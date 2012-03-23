@@ -56,7 +56,71 @@
 \author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
 \begin{document}
 \maketitle
+\section*{Question 1}
+\begin{lemma}
+Let $J_{1}$ be the job with highest penalty and $t_{1}$ is the latest time slot into which $J_{1}$ can be scheduled.
+There exists an optimal solution in which $J_{1}$ is scheduled at slot $t_{1}$.
+\end{lemma}
+\begin{proof}
+Let S* be any optimal solution. If S* schedules $J_{1}$ at $t_1$ , then we are done.\\
+Otherwise , S* puts $J_1$ at some slot $t \neq t_1$ and puts some other job $j_k \neq j_1$ at slot $t_1$. \\
+Consider a schedule S which differs from S* by exchanging the slots assigned to $j_k$ and $j_1$ while everything else is kept same. 
+\begin{lemma}
+S is an optimal solution
+\end{lemma}
+\begin{proof}
+\begin{itemize}
+\item Suppose $t_1 <= d_1$ and $J_1$ contributes no penalty in S*. Then $t < t_1$ , since $J_1$ can only be scheduled without penalty only in slots $<= t_1$ \\
+Exchanging $J_k$ with $J_1$ does not introduce any penalty due to $J_1$.
+Moreover , since $J_k$ moves to an earlier slot , its contribution to total penalty is either same or less than before. Hence , penalty(S) $<=$ penalty(S*)
+\item Suppose $t_1 <= d_1$ and $J_1$ contributes its penalty in S*. Hence $t > t_1$. By exchanging , $J_k$ may contribute a penalty in S but $J_1$ will not. So , max(penalty(S)) $<=$ penalty(S*) + $p_k - p_1$ . Since , $p_1 <= p_k$ , penalty(S) $<=$ penalty(S*). 
+\item Suppose $t_1 >= d_1$ . $J_1$ must contribute its penalty in every solution. Hence , by exchanging , we cannot eliminate the penalty of $J_1$ but the penalty due to $J_k$ might be eliminated.
+Hence, penalty(S) $<=$ penalty(S*) 
+\end{itemize}
+In every possible case , penalty(S) $<=$ penalty(S*) . Hence , S is optimal.
+\end{proof}
+By using lemma 2 , we conclude the proof of lemma 1.
+\end{proof}
 
+\begin{lemma}
+\[ 
+\ \vert Opt(A) \vert = \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
+\]
+\end{lemma}
+\begin{proof}
+a) \\
+\[ 
+\ \vert Opt(A) \vert <= \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
+\]
+Adding $(J_1,t_1)$ to $Opt(A\backslash(J_1,t_1))$ gives us a valid schedule.\\
+Hence , the optimal schedule will be at least as good as this vaild schedule. \\\\
+b) \\
+\[ 
+\ \vert Opt(A\backslash(J_1,t_1)) \vert <= \vert Opt(A) \vert - p(J_1,t_1) 
+\]
+Using lemma 1 , there is an optimal solution containing $(J_1,t_1)$ .\\
+Let that optimal solution be Opt(A). \\
+Removing $(J_1,t_1)$ from Opt(A) gives us a valid schedule for $Opt(A\backslash(J_1,t_1))$ . \\
+The optimal schedule will be at least as good as this vaild schedule. \\
+\end{proof}
+
+\begin{algorithm}[h]
+$S\leftarrow \emptyset$\\
+JL = List of Jobs sorted in non-increasing order of penalty // O(nlogn) \\
+T = Height Balanced AVL Tree containing the time slots  using total order property of time-slots as key// O(nlogn) \\
+\ForEach{J \in JL}{
+	$l \leftarrow search(J.deadline,T)$ // O(logn) \\ 
+	\If {$l <= J.deadline$} 
+		$t \leftarrow l $ \\
+	\else $t \leftarrow max(T)$ // O(logn) \\  
+	$S \leftarrow E' \cup (J,t)$ \\
+	} // O(nlogn) \\
+return $S$
+\caption{Algorithm for computing the optimal solution to the Job Scheduling Problem}
+\label{skeleton}
+\end{algorithm}
+
+\pagebreak
 \section*{Question 3}
 \begin{algorithm}[h]
 $E'\leftarrow \emptyset$\;
