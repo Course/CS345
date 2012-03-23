@@ -84,13 +84,13 @@ By using lemma 2 , we conclude the proof of lemma 1.
 
 \begin{lemma}
 \[ 
-\ \vert Opt(A) \vert = \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
+ \vert Opt(A) \vert = \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
 \]
 \end{lemma}
 \begin{proof}
-a) \\
+a) 
 \[ 
-\ \vert Opt(A) \vert <= \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
+ \vert Opt(A) \vert \leq \vert Opt(A\backslash(J_1,t_1)) \vert + p(J_1,t_1) 
 \]
 Adding $(J_1,t_1)$ to $Opt(A\backslash(J_1,t_1))$ gives us a valid schedule.\\
 Hence , the optimal schedule will be at least as good as this vaild schedule. \\\\
@@ -103,23 +103,22 @@ Let that optimal solution be Opt(A). \\
 Removing $(J_1,t_1)$ from Opt(A) gives us a valid schedule for $Opt(A\backslash(J_1,t_1))$ . \\
 The optimal schedule will be at least as good as this vaild schedule. \\
 \end{proof}
-
 \begin{algorithm}[h]
 $S\leftarrow \emptyset$\\
-JL = List of Jobs sorted in non-increasing order of penalty // O(nlogn) \\
-T = Height Balanced AVL Tree containing the time slots  using total order property of time-slots as key// O(nlogn) \\
-\ForEach{J \in JL}{
-	$l \leftarrow search(J.deadline,T)$ // O(logn) \\ 
-	\If {$l <= J.deadline$} 
-		$t \leftarrow l $ \\
-	\else $t \leftarrow max(T)$ // O(logn) \\  
+JL = List of Jobs sorted in non-increasing order of penalty $\backslash \backslash$ O(nlogn) \\
+T = Height Balanced AVL Tree containing the time slots  using total order property of time-slots as key $\backslash \backslash$ O(nlogn) \\
+\ForEach{$J \in JL$}{
+	$l \leftarrow search(J.deadline,T)$ $\backslash \backslash$ O(logn) \\ 
+	\eIf {$l \leq J.deadline$} 
+		{$t \leftarrow l $ \\}
+	{$t \leftarrow max(T)$ $\backslash \backslash$ O(logn) \\  
 	$S \leftarrow E' \cup (J,t)$ \\
-	} // O(nlogn) \\
+	} $\backslash \backslash$ O(nlogn) \\
+}	
 return $S$
 \caption{Algorithm for computing the optimal solution to the Job Scheduling Problem}
 \label{skeleton}
 \end{algorithm}
-
 \pagebreak
 \section*{Question 3}
 \begin{algorithm}[h]
@@ -263,7 +262,6 @@ $T' \leftarrow T' \cup (u,v)$ \\
 \caption{\textsc{dfs(\(v\)) }}
 \label{chord_intersection}
 \end{algorithm}
-
 \subsection*{Proof of Correctness :}
 We are using cycle property . Maximum weight edge of a cycle is not present in the minimum spanning tree. \\
 Let u be the new vertex added . We solve the problem from using the following recursive argument . \\
