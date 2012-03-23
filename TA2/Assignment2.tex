@@ -113,12 +113,9 @@ $S\leftarrow \emptyset$\\
 JL = List of Jobs sorted in non-increasing order of penalty $\backslash \backslash$ O(nlogn) \\
 T = Height Balanced AVL Tree containing the time slots  using total order property of time-slots as key $\backslash \backslash$ O(nlogn) \\
 \ForEach{$J \in JL$}{
-	$l \leftarrow search(J.deadline,T)$ $\backslash \backslash$ O(logn) search returns the job with deadline preceding J.deadline in case of failure. \\ 
-	\eIf {$l \leq J.deadline$} 
-		{$t \leftarrow l $ \\}
-	{$t \leftarrow max(T)$ $\backslash \backslash$ O(logn) \\  
-	$S \leftarrow S \cup (J,t)$ \\
-	} $\backslash \backslash$ O(nlogn) \\
+	$l \leftarrow search(J.deadline,T)$ $\backslash \backslash$ O(logn) search returns the time slot with deadline preceding J.deadline in case of failure or max time slot in case no such deadline exists \\ 
+	$S \leftarrow S \cup (J,l)$ \\
+	$\backslash \backslash$ O(nlogn) \\
 }	
 return $S$
 \caption{Algorithm for computing the optimal solution to the Job Scheduling Problem}
