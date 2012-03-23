@@ -155,9 +155,9 @@ $m_1 + m_2 + \ldots m_p = n$ as the vertices removed are disjoint and together t
 So total number of edges added are 
 \begin{align*}
 edges &= m_{1} -1 + m_{1}*n^\frac{1}{k} + m_{2} -1 + m_{2}*n^\frac{1}{k} + \ldots m_{p} -1 + m_{p}*n^\frac{1}{k} \\
-&= (m_{1} + m_{2} + \ldots m_{p})*n^{\frac{1}{k}} - p  \\
-&= n*n^{\frac{1}{k}} - p  \\
-&= n^{1+\frac{1}{k}} - p  \\
+&= (m_{1} + m_{2} + \ldots m_{p})*(1+n^{\frac{1}{k}}) - p  \\
+&= n*n^{\frac{1}{k}} - p + n  \\
+&= n^{1+\frac{1}{k}} - p + n \\
 &= O(n^{1+\frac{1}{k}})
 \end{align*}
 \end{proof}
