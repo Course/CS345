@@ -52,7 +52,7 @@
 
 \parindent 0in
 \parskip 1.5ex
-\title{Assignment 1}
+\title{Assignment 2}
 \author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
 \begin{document}
 \maketitle
@@ -126,6 +126,7 @@ $E'\leftarrow \emptyset$\;
 \While{there is any vertex left in the graph}{
 Pick any vertex $v$ arbitrarily\;
 Grow a BFS tree starting from $v$, level by level, and stop as soon as \textbf{number of vertices on the last level $\leq$ total number of vertices till second last level * $n^{\frac{1}{k}}$}\;
+$\backslash \backslash$ If bfs tree stops not because of above condition but because no more vertices then assume i = lastlevel + 1. So we will be adding all the edges of the bfs tree and removing all the vertices . \\
 Let the BFS tree be grown to level $i$ in this manner\;
 Add to $E'$ all those edges of the BFS tree upto level \textbf{i}\;
 Remove all vertices of the BFS tree upto level \textbf{i-1} from the graph\;
@@ -141,11 +142,11 @@ The height of BFS tree can not be greater than  k.
 If height of the tree becomes greater than k , it means at each level the number of vertices grow by a factor more than $n^{\frac{1}{k}}$. \\ 
 Let $T(i)$ be the number of vertices till level $i$.
 \begin{align*}
-T(i) &= \underbrace{T(i-1)}_{\text{total vertices till level i-1}} + \underbrace{T(i-1)*(n^{\frac{1}{k}})}_{\text{vertices at level i}} \\
-T(k) &= T(k-1) (1 + n^{\frac{1}{k}}) \\
-	&= T(0) (1 + n^{\frac{1}{k}}) \\
+T(i) &> \underbrace{T(i-1)}_{\text{total vertices till level i-1}} + \underbrace{T(i-1)*(n^{\frac{1}{k}})}_{\text{vertices at level i}} \\
+T(k) &> T(k-1) (1 + n^{\frac{1}{k}}) \\
+	&= T(0) (1 + n^{\frac{1}{k}})^{k} \\
 	&= (1 + n^{\frac{1}{k}})^{k} \\
-	&\geq 1 + n 
+	&> 1 + n 
 \end{align*}
 So bfs traversal stops before level k due to the following two cases
 \begin{enumerate}
@@ -209,18 +210,18 @@ Size of the spanner computed by the algorithm is $O(n^{1+1/k})$.
 \begin{proof}
 We are adding all the edges of the BFS tree upto level i-1 . The extra edges we are adding is less than  $T(i) * n^{\frac{1}{k}}$. \\
 Now consider a BFS in which m vertices are removed after its completion. 
-So edges added in the spanner due to this BFs is 
+So edges added in the spanner due to this BFS is atmost
 \begin{align*}
-\underbrace{m-1}_{\text{bfs tree edges}} + \underbrace{m*n^{\frac{1}{k}}}_{\text{Extra edges added}}
+\underbrace{m}_{\text{bfs tree edges}} + \underbrace{m*n^{\frac{1}{k}}}_{\text{Extra edges added}}
 \end{align*}
 Consider all the BFS which algorithm runs and let $(m_1,m_2, \ldots m_p)$ be the vertices removed in each of them then 
 $m_1 + m_2 + \ldots m_p = n$ as the vertices removed are disjoint and together they consist of the whole graph . \\
 So total number of edges added are 
 \begin{align*}
-edges &= m_{1} -1 + m_{1}*n^\frac{1}{k} + m_{2} -1 + m_{2}*n^\frac{1}{k} + \ldots m_{p} -1 + m_{p}*n^\frac{1}{k} \\
-&= (m_{1} + m_{2} + \ldots m_{p})*(1+n^{\frac{1}{k}}) - p  \\
-&= n*n^{\frac{1}{k}} - p + n  \\
-&= n^{1+\frac{1}{k}} - p + n \\
+edges &< m_{1}  + m_{1}*n^\frac{1}{k} + m_{2}  + m_{2}*n^\frac{1}{k} + \ldots m_{p}  + m_{p}*n^\frac{1}{k} \\
+&= (m_{1} + m_{2} + \ldots m_{p})*(1+n^{\frac{1}{k}})  \\
+&= n*n^{\frac{1}{k}}  + n  \\
+&= n^{1+\frac{1}{k}}  + n \\
 &= O(n^{1+\frac{1}{k}})
 \end{align*}
 \end{proof}
@@ -271,7 +272,7 @@ Now consider the dfs of a vertex v'. Let p be the children of v' in the old MST.
 \item After dfs(p) is completed we have the maximum weight edge on the path from p to u , Edge (v',u) and  current maximum weight edge on the path from v' to u .
 \item These edges together form a cycle so we remove the maximum weight edge of this cycle . There are essentially now two paths from v' to u and we know the maximum weight edge of both the paths . 
 \item We also need to find the new maximum weight edge on the path from v' to u. One path is broken when we removed the maximum weight edge . So the new maximum weight edge is the maximum weight edge of the other path . The thing to note is now we again have exactly one path from v' to u. This  ensures that all the vertices have a path to u and hence the graph (new MST here) remains connected whenever an edge is removed.
-\item Total number of edges in the new graph is (n + n-1 =) 2n -1.  Initially whenever we start a dfs on a vertex we include the edge of that vertex to u . So considering this We add total n vertices . Now whenever we include an edge from the old MST we remove an edge from this such that all the vertices are still connected . Thus the number of edges in the new  spanning tree is n and the proof that it is indeed minimum spanning tree is from the cycle property . 
+\item Total number of edges in the new graph is (n + n-1 =) 2n -1.  Initially whenever we start a dfs on a vertex we include the edge of that vertex to u . So considering this we add total n edges . Now whenever we include an edge from the old MST we remove an edge from this such that all the vertices are still connected . This property is preserved at the end of every dfs , for an edge we add , we remove an edge . So number of edges remain n. Thus the number of edges in the new  spanning tree is n and the proof that it is indeed minimum spanning tree is from the cycle property because everytime we are removing the maximum weight edge of the a cycle. 
 \end{itemize}
 
 
