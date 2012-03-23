@@ -57,6 +57,11 @@
 \begin{document}
 \maketitle
 \section*{Question 1}
+Counter example for strategy 1 : \\
+Highest deadline job has highest penalty . If it would have been scheduled earliest , it might not contribute to the penalty , but when it is scheduled last the set of valid time slots might have become nil. \\
+Counter example for strategy 2: \\
+Consider a case where the highest penalty job say $J_1$ is scheduled at earliest possible time slot say $t_1$ and it has more than one element in its set of valid time slots. It might block some other job $J_k$ whose set of valid time slots is exactly $t_1$. Then , $J_k$ would contribute to the total penalty whereas the optimal solution would not incur penalty from $J_k$.  \\
+Formal Proof for strategy 3 : 
 \begin{lemma}
 Let $J_{1}$ be the job with highest penalty and $t_{1}$ is the latest time slot into which $J_{1}$ can be scheduled.
 There exists an optimal solution in which $J_{1}$ is scheduled at slot $t_{1}$.
@@ -121,11 +126,87 @@ return $S$
 \end{algorithm}
 \pagebreak
 \section*{Question 2}
+Since $d(P_i,P_j) = d(P_j,P_i)$ for each point $P_i$ we insert $d(P_i,P_j)$ for all $j < i$. \\
+Let this list be PL. \\
 \begin{algorithm}[h]
+$V\leftarrow \emptyset$\\
+Sort PL in increasing order of distance. // O($n^2log(n)$) \\
+\While{PL is not empty}{
+Remove the first element from PL \;
+Let d be the value of distance obtained in the first element \;
+Let $P_i$ and $P_j$ be the end points of this element. \;
+if $P_i$ in V and $P_j$ in V and $P_i$ and $P_j$ are not in the same subtree \\
+Create an internal node of height = d\\
+Assign its left child to the root of the subtree containing the leaf labelled $P_i$. \\ 
+Assign its right child to the root of the subtree containing the leaf labelled $P_j$.\\ 
+
+if $P_i$ in V and $P_j$ not in V \\
+Create an internal node of height = d\\
+Assign its left child to the root of the subtree containing the leaf labelled $P_i$.\\
+Assign its right child to the leaf node (created if needed) with label $P_j$ and height 0 \\ 
+
+if $P_i$ not in V and $P_j$ in V \\
+Create an internal node of height = d\\
+Assign its left child to the leaf node (created if needed) with label $P_i$ and height 0 \\
+Assign its right child to the root of the subtree containing the leaf labelled $P_j$. \\
+
+if $P_i$ not in V and $P_j$ not in V \\
+Create an internal node of height = d\\
+Assign its left child to the leaf node (created if needed) with label $P_i$ and height 0 \\
+Assign its right child to the leaf node (created if needed) with label $P_j$ and height 0 \\
+
+Whenever a leaf node is created , it is added to the set V \\
+
+}
 
 \caption{Algorithm for computing hierarchical metric}
 \label{skeleton}
 \end{algorithm}
+
+Time Complexity : Since there are O($n^2$) iterations and each iteration takes polynomial time , hence the algorithm runs in polynomial time \\
+
+Correctness : \\
+
+h(v) = 0 for each leaf node v and h(u) $>=$ h(v) if u is parent of v \\
+
+Whenever a new leaf node is created its height is set to 0 and the algorithm does not change it anywhere. \\
+Observe that distances are added in increasing order to the tree . \\
+So the height of an internal node is greater than its children (which were added to the tree before this iteration) \\
+
+
+$\tau$ is consistent with d  :\\
+
+Let $\tau$ be consistent with d after ith iteration. \\
+If we can prove that $\tau$ is consistent with d after (i+1) iterations , then by induction theorem we are done. \\
+
+In the ith iteration one of the following things can happen : - \\
+\begin{itemize}
+\item If the internal node created has two leaf nodes as its children  , its height is equal the distance between two children , hence it is consistent with d. \\
+\item When both leaf nodes are already present in the same subtree , nothing changes . \\
+\item When both leaf nodes are present in different subtrees , we create a new internal node and assign its height as the distance between these two leaf nodes . Since from the algorithm , this internal node is actually the least common ancestor of both the leaf nodes , $\tau$ is consistent with d \\
+\item When one of the leaf nodes is not present in the tree , we create it with height 0. We assign it as the children of the new internal node . The root of the subtree containing other leaf node is also assigned as the children of this internal node. Since this internal node is the least common ancestor of the two , $\tau$ is consistent with d. \\
+
+\end{itemize}
+
+Since , $\tau$ is consistent with d at the end of (i+1) iterations , it also holds at the end of the algorithm .\\
+
+
+
+If $\tau'$ is any other hierarchical metric consistent with d  then $\tau'(p_i,p_j) <= \tau(p_i,p_j) $ for all $p_i, p_j$ :\\
+
+For all $p_i$ and $p_j$ , with $\tau(p_i,p_j) = d_{ij}$ no other $\tau'$ can be greater than $d_{ij}$ . Hence , $\tau'(p_i,p_j) <= \tau(p_i,p_j) $
+
+Now we need to consider only those pair of points $p_i$ and $p_j$ , with $\tau(p_i,p_j) \neq d_{ij}$
+
+Assume that for a particular value of $p_i$ and $p_j$ , $\tau'(p_i,p_j) > \tau(p_i,p_j)$  . \\
+Let v be the least common ancestor in $\tau$ and v' in $\tau'$ . \\
+$h(v) < h(v') <= d_{ij}$ \\
+let the two nodes with $d_{xy}$ be $p_x$ and $p_y$. \\
+Hence , $\tau'(p_x,p_y) = \tau'(p_i,p_j) > \tau(p_i,p_j) = \tau(p_x,p_y) = d_{xy} $ \\ 
+But $\tau'(p_x,p_y) <= d_{xy} $ \\
+Hence contradiction. 
+
+
 
 \pagebreak
 \section*{Question 3}
