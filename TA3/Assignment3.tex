@@ -74,7 +74,30 @@ $paths[v] \leftarrow 1$}
 \caption{\textsc{DFS(\(s\)) }}
 \label{UID}
 \end{algorithm}
+\subsection*{Proof of Correctness}
+\begin{itemize}
+\item paths[v] denotes the number of paths from v to the exit vertex . This can be defined recursively as :
+\begin{align*}
+paths[v] = \sum_{\forall w | (v,w) \in E}{paths[w]}
+\end{align*}
+With base case of 
+\begin{align*}
+paths[sink] = 1
+\end{align*}
+\item The invariant at the end of every DFS(v) is $paths[v]$ is the number of paths from v to sink and all edges on the path are already assigned weights such that all paths from v to sink get unique id between 0 to $paths[v]-1$. 
+\item Now suppose in DFS(v) . DFS on $(x_1,x_2,\ldots,x_p)|(v,x_i)\in E$ will already be completed before DFS(v) ends . So we only need to assign weights to edges $(v,x_1),(v,x_2),\ldots,(v,x_p))$ because rest of the edges on the paths from v to sink are already assigned weights. 
+\item We follow the following strategy to assign these weights so each path gets a unique id :
+\begin{itemize}
+\item $wt(v,x_1) = 0$ . So all paths from v to sink going through $x_1$ will have ids from \[0\] to \[paths[x_1]-1\].
+\item $wt(v,x_2) = 0 + paths[x1]$ . So now all  paths from v to sink going through $x_2$ will have ids from \[paths[x1]\] to \[paths[x1] + paths[x2] -1\] .
+\item $wt(v,x_3) = 0 + paths[x1] + paths[x2]$ . So now all  paths from v to sink going through $x_3$ will have ids from \[paths[x1] + paths[x2]\] to \[paths[x1] + paths[x2]  + paths[x3]-1\]
+\vdots 
+\item $wt(v,x_p) = 0 + paths[x1] + paths[x2] + \ldots paths[x_{p-1}]$ . So now all  paths from v to sink going through $x_p$ will have ids from \[paths[x1] + paths[x2] + \ldots paths[x_{p-1}]\] to \[paths[x1] + paths[x2]  + paths[x3]+ \ldots +paths[x_{p-1}] + paths[x_p]-1 \] which is same as $ paths[v] -1$ 
 
+\end{itemize}
+\item So all the paths from v to sink after DFS(v) completes have unique ids . Thus our invariant is preserved . 
+\item When DFS(source) finishes we have all the edges assigned weights so that each path from source to sink gets a unique id . Which proves the correctness of the algorithm . 
+\end{itemize}
 \pagebreak
 
 \end{document}
