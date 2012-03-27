@@ -100,4 +100,51 @@ paths[sink] = 1
 \end{itemize}
 \pagebreak
 
+\section*{Question 2}
+
+\subsection*{Recursive formulation:}
+
+Assign i hours to the nth course where i can vary from 0 to H . \\
+
+If the optimal solution for rest n -1 courses in H - i hours are known, \\
+
+the optimal solution for n courses in H hours would be the maximum of the sum over all possible values of i. \\
+
+Formally, 
+
+
+\[
+\ Opt(H,n) = \max_{0 \leq i \leq H} \{ Opt(H-i,n-1) + f_{n}(i) \} 
+\]
+\[
+\  \forall i , Opt(0,i) = 0 
+\]
+\[
+\  \forall j , Opt(j,0) = 0 
+\]
+
+
+\subsection*{Algorithm:}
+\begin{algorithm}
+\For{i in 1 to H}{
+	$M[i,0] \leftarrow 0$
+	}
+\For{i in 1 to n}{
+	$M[0,i] \leftarrow 0$
+	}
+\For{h in 1 to H} {
+	\For{j in 1 to n} {
+		\For{i in 0 to h} {
+			\If{$M[h-i,j-1] + f_j(i) > M[h,j]$} {
+				$M[h,j] \leftarrow M[h-i,j-1] + f_j(i)$
+				}
+			}
+	}
+}
+\caption{\textsc{Optimal soulution for n courses in H hours}}
+\label{UID}
+\end{algorithm}
+
+\subsection*{Correctness :}
+
 \end{document}
