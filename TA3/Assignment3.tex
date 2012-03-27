@@ -127,10 +127,10 @@ Formally,
 \subsection*{Algorithm:}
 \begin{algorithm}
 \For{i in 1 to H}{
-	$M[i,0] \leftarrow 0$
+	$M[i,0] \leftarrow 0$ //O(H)
 	}
 \For{i in 1 to n}{
-	$M[0,i] \leftarrow 0$
+	$M[0,i] \leftarrow 0$ //O(n)
 	}
 \For{h in 1 to H} {
 	\For{j in 1 to n} {
@@ -139,11 +139,20 @@ Formally,
 				$M[h,j] \leftarrow M[h-i,j-1] + f_j(i)$
 				}
 			}
-	}
+	} 
 }
+return M[H,n]
 \caption{\textsc{Optimal soulution for n courses in H hours}}
 \label{UID}
 \end{algorithm}
+
+\subsection*{Time Complexity:}
+
+The first 2 for loops take O(H) and  O(n) respectively. \\
+
+The nested loop takes $O(nH^2)$ time . \\
+
+Hence the total running time of the algorithm is $O(nH^2)$ . \\
 
 \subsection*{Correctness :}
 
