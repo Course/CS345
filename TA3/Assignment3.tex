@@ -103,38 +103,30 @@ paths[sink] = 1
 \section*{Question 2}
 
 \subsection*{Recursive formulation:}
+How to compute the solution for j courses in h hours? \\
 
-Assign i hours to the nth course where i can vary from 0 to H . \\
+Assign i hours to the jth course where i can vary from 1 to h . \\
 
-If the optimal solution for rest n -1 courses in H - i hours are known, \\
+If the optimal solution for rest j -1 courses in h - i hours are known, \\
 
-the optimal solution for n courses in H hours would be the maximum of the sum over all possible values of i. \\
+the optimal solution for j courses in h hours would be the maximum of the sum over all possible values of i. \\
 
 Formally, 
 
-
 \[
-\ Opt(H,n) = \max_{0 \leq i \leq H} \{ Opt(H-i,n-1) + f_{n}(i) \} 
+\  \forall i , Opt(i,1) = f_1(i)
 \]
 \[
-\  \forall i , Opt(0,i) = 0 
-\]
-\[
-\  \forall j , Opt(j,0) = 0 
+\ \forall (h,j) ,  Opt(h,j) = \max_{1 \leq i \leq j} \{ Opt(h-i,j-1) + f_{j}(i) \} 
 \]
 
-
-\subsection*{Algorithm:}
 \begin{algorithm}
 \For{i in 1 to H}{
-	$M[i,0] \leftarrow 0$ //O(H)
-	}
-\For{i in 1 to n}{
-	$M[0,i] \leftarrow 0$ //O(n)
+	$M[i,1] \leftarrow f_1(i)$ //O(H)
 	}
 \For{h in 1 to H} {
 	\For{j in 1 to n} {
-		\For{i in 0 to h} {
+		\For{i in 1 to h} {
 			\If{$M[h-i,j-1] + f_j(i) > M[h,j]$} {
 				$M[h,j] \leftarrow M[h-i,j-1] + f_j(i)$
 				}
@@ -148,12 +140,15 @@ return M[H,n]
 
 \subsection*{Time Complexity:}
 
-The first 2 for loops take O(H) and  O(n) respectively. \\
+The first loop takes O(H) time. \\
 
 The nested loop takes $O(nH^2)$ time . \\
 
 Hence the total running time of the algorithm is $O(nH^2)$ . \\
 
 \subsection*{Correctness :}
+
+Given the optimal solution for j-i courses in h-i hours , if we assign i hours to the jth course , the optimal solution for j courses in h hours would be the maximum among all values of i. (optimal substructure property)
+
 
 \end{document}
