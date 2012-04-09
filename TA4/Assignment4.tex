@@ -183,4 +183,92 @@ If there is no path between i and j , the algorithm prints "no path" in constant
 If the shortest path between i and j has t vertices , at each recursive call , one intermediate vertex is printed.
 Hence reporting all the vertices in the path takes time of the order of number of edges in the path .\\
 
+\section*{Question 2}
+We can reduce the task of finding an opportunity cycle in a graph G(V,E) to finding the negative cycle by replacing all weights $w_e$ with $-log \; w_e$
+forming a modified graph G'(V,E). Suppose C is a opportunity cycle in G . 
+\[ \prod_{e \in E} {w_e} > 1 \]
+Taking logarithmic on both the sides :
+\begin{align*}
+log \prod_{e \in E} {w_e} &> 0 \\
+\sum_{e \in E} {log \; w_e} &> 0 \\
+\sum_{e \in E} {-log \; w_e} &< 0 \\
+\end{align*}
+Thus any opportunity cycle in G is a negative cycle in G'. 
+
+\linesnumbered
+\begin{algorithm}[h]
+$\backslash \backslash$ Transforming the Graph into G' in $O(n^2)$ \\
+\For{$i=1$ to $N$ }{
+	\For{$j=1$ to $N$}
+	{
+		$w(i,j)$ $\leftarrow$  $-log(w(i,j))$ \;
+	}
+}
+$\backslash \backslash$ Standard Bellman-Ford algorithm  in $O(n^3)$ \\
+\For{$i=1$ to $N$}{
+d[v] $\leftarrow$ $\inf$ \;
+pre[v] $\leftarrow$ -1 \;
+}
+$d[source]\leftarrow 0$\;
+\For{$k=1$ to $N$}{
+	\For{$i=1$ to $N$}{
+		\For{$j=1$ to $N$}{
+			\If{$d[i]+w(i,j)<d[j]$}{
+				$d[j]\leftarrow d[i]+w(i,j)$\;
+				$p[j]\leftarrow i$ \;
+				}
+		}
+	}
+}
+$\backslash \backslash$ Checking for negative cycle in $O(n^2)$ \\
+flag $\leftarrow$ None \;
+\For{$i=1$ to $N$}{
+	\For{$j=1$ to $N$}{
+		\If{$d[i]+w(i,j)<d[j]$}{
+			flag  $\leftarrow$ j \;
+			}
+	}
+}
+$\backslash \backslash$ Reporting negative cycle if it exists \\
+\If { flag is  Not None}{
+	cycle $\leftarrow$ $\lbrace$flag$\rbrace$ \;
+	source $\leftarrow$ flag \;
+	flag $\leftarrow$ p[flag] \;
+	\While{flag != source}{
+		cycle $\leftarrow$ cycle + flag \;
+		}
+}
+\caption{{\em Opportunity\_cycle($V,E$)}:~
+Algorithm to report opportunity cycle in a graph using bellman-ford algorithm.
+}
+\label{Bellman-final}
+\end{algorithm}
+\subsection*{Proof of correctness}
+\begin{lemma}
+After i repetitions of the outer loop of bellman-ford :
+\begin{itemize}
+\item If $d(u)$ is not infinity, it is equal to the length of some path from source to u.
+\item If there is a path from source to u with at most i edges, then d(u) is at most the length of the shortest path from source to u with at most i edges.
+\end{itemize}
+\end{lemma}
+\begin{proof}
+\begin{itemize}
+\item \textbf{Base Case: } d[source] = 0 and rest are infinity. This is true as there are no path from source to any other vertex consisting of 0 vertices. 
+\item \textbf{Induction : } 
+\begin{enumerate} 
+\item First part of lemma is trivial . Consider a vertex v whose distance is updated as d[v] = d[u] + w(u,v) . Therfore by induction hypothesis we have a path from source to u of length d[u] and when we add the edge (u,v) to it to get a path of length d[v] to v. 
+\item For the second part, consider the shortest path from source to u with at most i edges. Let v be the last vertex before u on this path. Then, the part of the path from source to v is the shortest path from source to v with at most i-1 edges. By induction hypothesis, d[v] after i−1 cycles is at most the length of this path. Therefore, w(u,v) + d[v] is at most the length of the path from s to u. In the ith cycle, d[u] gets compared with w(u,v) + d[v], and is set equal to it if w(u,v) + d[v] was smaller. Therefore, after i cycles, d[u] is at most the length of the shortest path from source to u that uses at most i edges. 
+\item If there are no negative-weight cycles, then every shortest path visits each vertex at most once, so while checking for negative cycle no further improvements can be made. Conversely, suppose no improvement can be made. Then for any cycle with vertices $c_0 = c_k , c_1 , c_2 , \ldots , c_k$ ,
+\[
+d[c_{i}] \leq d[c_{i-1}] +  w(c_{i-1},c_{i}) \forall i \in \lbrace 1,\ldots ,k\rbrace \]
+summing up for all the vertices . 
+\[ 
+0 \leq \sum_{i \in \lbrace 1,\ldots ,k\rbrace } {w(c_{i-1},c_{i})}
+\]
+Therefore there is no negative cycle .
+\end{enumerate}
+So if there is a negative cycle in G' then this algorithm finds it or else there is no negative cycle in the graph G' and hence no opportunity cycle in G. 
+\end{itemize}
+\end{proof}
+
 \end{document}

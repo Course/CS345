@@ -80,19 +80,14 @@ $\backslash \backslash$ Transforming the Graph into G' in $O(n^2)$ \\
 $\backslash \backslash$ Standard Bellman-Ford algorithm  in $O(n^3)$ \\
 \For{$i=1$ to $N$}{
 d[v] $\leftarrow$ $\inf$ \;
-pre[v] $\leftarrow$ -1 \;
+p[v] $\leftarrow$ -1 \;
 }
-$d[source]\leftarrow 0$\;
-\For{$k=1$ to $N$}{
+$d[source]\leftarrow 0$\;\For{$k=1$ to $N$}{
 	\For{$i=1$ to $N$}{
 		\For{$j=1$ to $N$}{
 			\If{$d[i]+w(i,j)<d[j]$}{
-				$d[j]\leftarrow d[i]+\w(i,j)$\;
-				$p[j]\leftarrow i$ \;
-				}
-		}
-	}
-}
+				$d[j]\leftarrow d[i]+w(i,j)$ \\
+				$p[j]\leftarrow i$}}}} 
 $\backslash \backslash$ Checking for negative cycle in $O(n^2)$ \\
 flag $\leftarrow$ None \;
 \For{$i=1$ to $N$}{
