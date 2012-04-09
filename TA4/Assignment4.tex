@@ -89,6 +89,8 @@ Hence, the shortest distance in X is $\delta^{k-1}(i,k) + \delta^{k-1}(k,j)$. \\
 \ \delta^k(i,j) = min ( \delta^{k-1}(i,j) , \delta^{k-1}(i,k) + \delta^{k-1}(k,j) )
 \]
 
+\pagebreak
+\linesnumbered
 \begin{algorithm}
 // Initially , k = 0 \; 
 \For {i in 1 to n}{
@@ -132,6 +134,8 @@ The shortest path between i and j is either a direct edge from i to j or it is t
 Hence , to report the shortest path from i to j , all we need is vertex k .
 Shortest Path from i to j is computed by recursively reporting the shortest path from i to k and then the shortest path from k to j. \\
 
+\pagebreak
+\linesnumbered
 \begin{algorithm}
 // Initially , k = 0 \; 
 \For {i in 1 to n}{
@@ -164,7 +168,7 @@ Shortest Path from i to j is computed by recursively reporting the shortest path
 Same as the previous algorithm\\
 Time complexity is $O(n^3)$ \\
 Space requirement is $O(n^2)$ \\
-
+\linesnumbered
 \begin{algorithm}
 \If{$\delta[i,j] = \infty$}{
 	print "no path exists between i and j" \;
