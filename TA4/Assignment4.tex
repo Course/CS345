@@ -1,0 +1,186 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage[vlined,ruled]{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{color}
+\input{rgb}
+\newcommand{\handout}[5]{
+  \noindent
+  \begin{center}
+  \framebox{
+    \vbox{
+      \hbox to 5.78in { {\bf CS345 : Algorithms II } \hfill #2 }
+      \vspace{4mm}
+      \hbox to 5.78in { {\Large \hfill #5  \hfill} }
+      \vspace{2mm}
+      \hbox to 5.78in { {\em #3 \hfill #4} }
+    }
+  }
+  \end{center}
+  \vspace*{4mm}
+}
+
+\newcommand{\lecture}[4]{\handout{#1}{#2}{#3}{}{#1}}
+
+
+\newcommand{\TT}[1]{\textsc{#1}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{exercise}[theorem]{\color{DarkBlue}{\bf Exercise}}
+\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\topmargin 0pt
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 8.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\parindent 0in
+\parskip 1.5ex
+\title{Assignment 3}
+\author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
+\begin{document}
+\maketitle
+\section*{Question 1}
+
+$P^0(i,j)$ is the set of all paths from i to j with no intermediate vertices.
+$P^0(i,j)$ is empty if no direct edge between i and j otherwise it contains the direct edge from i to j.
+$\delta^0(i,j)$ is infinity if no direct edge between i and j otherwise the weight of the direct edge from i to j. 
+\\
+$P^n(i,j)$ is the set of all paths from i to j with no constraint on the intermediate vertices. 
+Hence , $\delta^n(i,j)$ is the shortest distance between i and j. 
+\\
+$P^k{i,j}$ is the set of all paths from i to j with intermediate vertices of label atmost k .It can be partitioned into two sets. All the paths containing k as an intermediate vertex belong to one set . The rest of the paths have intermediate vertex of label at most k-1. They belong to the other set.
+\\
+$P^k(i,j) = P^{k-1}(i,j) \cup X $ where X =  \{The set of all paths from i to j with intermediate vertex k\} 
+The shortest distance in $P^k(i,j)$ is the minimum of the shortest distance in $P^{k-1}(i,j)$ and X. \\
+The shortest distance in $P^{k-1}(i,j)$ is $\delta^{k-1}(i,j)$ . \\
+The paths in X have the following structure : \\
+Every path in X is a concatenation of some path from i to k and then from k to j. \\
+The shortest path in X would be the concatenation of the shortest path from i to k and shortest path from k to j. \\
+Hence, the shortest distance in X is $\delta^{k-1}(i,k) + \delta^{k-1}(k,j)$. \\
+
+\subsection*{Recursive Formulation:}
+
+\[
+\ \delta^0(i,j) = w(i,j) if (i,j) \in E else \inf 
+\]
+
+\[
+\ \delta^k(i,i) = 0
+\]
+
+\[
+\ \delta^k(i,j) = min ( \delta^{k-1}(i,j) , \delta^{k-1}(i,k) + \delta^{k-1}(k,j) )
+\]
+
+\begin{algorithm}
+// Initially , k = 0 \; 
+\For {i in 1 to n}{
+	\For{j in 1 to n}{
+		
+		\If{$(i,j) \in E$}{ 
+			$\delta[i,j] \leftarrow w(i,j)$ \; 		
+		}
+		\Else{
+			$\delta[i,j] \leftarrow \infty$ \;
+		}	
+	}
+}
+\For{k in 1 to n}{
+	\For{i in 1 to n}{
+		\For{j in 1 to n}{
+			\If{$\delta[i,k] + \delta[k,j] < \delta[i,j]$}{
+			$\delta[i,j] \leftarrow \delta[i,k] + \delta[k,j])$ \;
+			}
+		}
+	}
+}    
+\caption{\textsc{All Pair Shortest Path - Distances}}
+\end{algorithm}
+
+\subsection*{Analysis: }
+
+1st nested loop is $O(n^2)$ \\
+2nd nested loop is $O(n^3)$ \\
+Hence , total time complexity is $O(n^3)$ \\
+
+For calculating the matrix for kth case , we can overwrite the matrix of k-1th case. \\
+Hence , space required is only the size of nxn matrix i.e $O(n^2)$
+
+
+\subsection*{Paths :}
+
+During the bottom up build , the shortest path between i to j changes only when it has k as its intermediate vertex.
+Otherwise , it remains the same.
+The shortest path between i and j is either a direct edge from i to j or it is the shortest path from i to k and then k to j.
+Hence , to report the shortest path from i to j , all we need is vertex k .
+Shortest Path from i to j is computed by recursively reporting the shortest path from i to k and then the shortest path from k to j. \\
+
+\begin{algorithm}
+// Initially , k = 0 \; 
+\For {i in 1 to n}{
+	\For{j in 1 to n}{
+		$P[i,j] \leftarrow null$ \;  
+		\If{$(i,j) \in E$}{ 
+			$\delta[i,j] \leftarrow w(i,j)$ \; 		
+		}
+		\Else{
+			$\delta[i,j] \leftarrow \infty$ \;
+		}	
+	}
+}
+\For{k in 1 to n}{
+	\For{i in 1 to n}{
+		\For{j in 1 to n}{
+			\If{$\delta[i,k] + \delta[k,j] < \delta[i,j]$}{
+			$\delta[i,j] \leftarrow \delta[i,k] + \delta[k,j])$ \;
+			$P[i,j] \leftarrow k$ \;
+			}
+		}
+	}
+}    
+
+
+\caption{\textsc{All Pair Shortest Path - Paths}}
+\end{algorithm}
+
+\subsection*{Analysis: }
+Same as the previous algorithm\\
+Time complexity is $O(n^3)$ \\
+Space requirement is $O(n^2)$ \\
+
+\begin{algorithm}
+\If{$\delta[i,j] = \infty$}{
+	print "no path exists between i and j" \;
+}
+\If{$P[i,j] = null$}{
+	print " " \; // direct edge between i and j
+}
+\Else{
+	print $ReportPath(i,P[i,j]) + P[i,j] + ReportPath(P[i,j],j)$ \; 
+}
+\caption{\textsc{ReportPath(i,j)}}
+\end{algorithm}
+
+\subsection*{Analysis: }
+If there is no path between i and j , the algorithm prints "no path" in constant time . \\
+If the shortest path between i and j has t vertices , at each recursive call , one intermediate vertex is printed.
+Hence reporting all the vertices in the path takes time of the order of number of edges in the path .\\
+
+\end{document}
