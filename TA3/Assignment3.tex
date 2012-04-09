@@ -56,7 +56,18 @@
 \author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
 \begin{document}
 \maketitle
-\section*{Question 1}
+\section*{Question 2}
+We can reduce the task of finding an opportunity cycle in a graph G(V,E) to finding the negative cycle by replacing all weights $w_e$ with $-log \; w_e$
+forming a modified graph G'(V,E). Suppose C is a opportunity cycle in G . 
+\[ \prod_{e \in E} {w_e} > 1 \]
+Taking logarithmic on both the sides :
+\begin{align*}
+log \prod_{e \in E} {w_e} &> 0 \\
+\sum_{e \in E} {log \; w_e} &> 0 \\
+\sum_{e \in E} {-log \; w_e} &< 0 \\
+\end{align*}
+Thus any opportunity cycle in G 
+
 
 
 \begin{algorithm}
