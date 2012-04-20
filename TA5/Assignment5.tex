@@ -1,0 +1,150 @@
+\documentclass[11pt]{article}
+\usepackage{latexsym}
+\usepackage[vlined,ruled]{algorithm2e}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{epsfig}
+\usepackage{psfrag}
+\usepackage{color}
+\input{rgb}
+\newcommand{\handout}[5]{
+  \noindent
+  \begin{center}
+  \framebox{
+    \vbox{
+      \hbox to 5.78in { {\bf CS345 : Algorithms II } \hfill #2 }
+      \vspace{4mm}
+      \hbox to 5.78in { {\Large \hfill #5  \hfill} }
+      \vspace{2mm}
+      \hbox to 5.78in { {\em #3 \hfill #4} }
+    }
+  }
+  \end{center}
+  \vspace*{4mm}
+}
+
+\newcommand{\lecture}[4]{\handout{#1}{#2}{#3}{}{#1}}
+
+
+\newcommand{\TT}[1]{\textsc{#1}}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{exercise}[theorem]{\color{DarkBlue}{\bf Exercise}}
+\newtheorem{problem}[theorem]{\color{darkred}{\bf Problem}}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+
+\topmargin 0pt
+\advance \topmargin by -\headheight
+\advance \topmargin by -\headsep
+\textheight 8.9in
+\oddsidemargin 0pt
+\evensidemargin \oddsidemargin
+\marginparwidth 0.5in
+\textwidth 6.5in
+
+\parindent 0in
+\parskip 1.5ex
+\title{Assignment 5}
+\author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
+\begin{document}
+\maketitle
+\section*{Question 2}
+\begin{claim}
+All the edges removed by the attacker will belong to some min-cut.
+\label{mincut}
+\end{claim}
+\begin{proof}
+It is given that each node lies on atleast one path from $s-t$.
+From the max-flow , min-cut theorem , the size of min-cut is k. Consider a cut as follows :
+
+The cut divides the graph into two partitions $s \in A$ and $t \in A'$ , such that for any edge $(u,v)$ removed $u \in A$ and $v \in A'$. Also $\forall v' \in A'$ , $t$ is reachable from $v'$ and $\forall u' \in A $ , $u'$ is reachable from $s$ , as no such edge $(x,y)$ is removed whose both end points lie either in $A$ or in $A'$.
+
+If the size of this cut is greater than k , then $\exists (x,y) \in E$ not removed by the attacker such that $x \in A$ and $y \in A'$.
+since $x$ is reachable from $s$ and $t$ is reachable from $y$ , and edge $(x,y)$ is not removed , so $t$ is reachable from $s$ , which leads to contradiction. 
+
+Hence the size of this cut is k. Thus it is a min-cut.
+\end{proof}
+
+\begin{claim}
+Any edge $(u,v)$ is removed by the attacker if and only if $ping(u)$ is true and $ping(v)$ is false. 
+\label{ping}
+\end{claim}
+\begin{proof}
+if part :
+
+$(u,v)$ is removed by the attacker so $u \in A$ and $v \in A'$.
+
+$ping(u)$ is true follows trivially from the fact that $u \in A$.
+
+If all the edges of the above min-cut are removed then there is no path from any vertex in $A$ to any vertex in $A'$. 
+As $s \in A$ and $v \in A'$, so $ping(v)$ is false.
+
+only if part :
+
+Suppose $(u,v)$ be such edge with $ping(u)$ = true and $ping(v)$ = false.
+
+$v$ can not belong to $A$ as all vertices in $A$ are reachable from $s$. Similarly $u$ can not belong to $A'$ , if $u$ belonged to $A'$ then there is a path from $u$ to $t$ from the property of $A'$ and there is a path from $s$ to $u$ as $ping(u)$ is true , so there is a path from $s$ to $t$ which is contradiction. 
+
+Thus $u \in A$ and $v \in A'$ , since this edge forms a part of the min-cut edges so it would have been removed by the attacker.
+
+\end{proof}
+
+\begin{algorithm}[h]
+$G'$ $\leftarrow$ $G$ \;
+\For {$i=1$ to k}{
+	Let $\lbrace x_1=s,x_2,\ldots x_m=t \rbrace$ be any $s-t$ path in $G'$. \;
+	$L = 1$ \;
+	$R = m$ \;
+	$found = False$ \;
+	\While{$L \leq R$ and $found = False$}
+	{
+	$mid \leftarrow (L+R)/2$ \;
+	\eIf{$ping(x_{mid})$ == $True$ and $ping(x_{mid+1})$ == $False$}
+	{
+	$found=True$ \;
+	remove edge $(x_{mid},x_{mid+1})$ from $G'$ \;
+	}
+	{
+	\eIf{$ping(x_{mid})==True$}
+	{
+	$L \leftarrow mid+1$ \;
+	}
+	{
+	$R \leftarrow mid-1$ \;
+	}
+	}
+	}
+}
+do a dfs on $G'$ from $s$ to find all vertices reachable from $s$ which will form the set $A$. \;
+$V-A = A'$ which is the set of vertices not reachable from $s$. \;
+\caption{{\em Find\_Reachability($G(V,E)$)}:~
+Algorithm to report vertices not reachable from $s$.
+}
+\label{Algorithm}
+\end{algorithm}
+\subsection*{Order of ping requests}
+Since length of any $s-t$ path can not be greater than $n$ and we are issuing requests in binary search fashion. 
+So number of ping requests in the inner while loop is $O(log n)$.
+Since for loop is repeated k times, so total number of ping requests are $O(k logn)$.
+
+\subsection*{Correctness of Algorithm}
+\begin{claim}
+Every $s-t$ path we are guaranteed to find an edge $(u,v)$ which is removed by the attacker.
+\end{claim}
+\begin{proof}
+Let there be no such edge , then in the new Graph after removing the attacked edges , all the edges of this path exist. So there is a $s-t$ path which leads to contradiction. 
+\end{proof}
+
+So in every iteration , the path we find , we are guaranteed to find an edge $(u,v)$ which is present in this path and is removed by the attacker. This edge is found by the binary search algorithm using the claim $\ref{ping}$. So every iteration we are removing one edge which is actually attacked by the attacker. 
+
+We are also guaranteed to find a $s-t$ path in every iteration as $k$ is the minimum number of edges to be removed to separate $s$ and $t$ and we are running for loop only $k$ number of times. So after $k$ iterations we find $k$ edges which are actually attacked by the attacker. So the graph $G'$ consist of only edges actually present in the network after the attack. Now simple dfs from $s$ finds the vertices actually reachable from $s$ which forms the set $A$ . $V-A=A'$ forms the set of vertices not reachable from $s$.
+
+\end{document}
