@@ -56,6 +56,54 @@
 \author{Satvik Chauhan (Y9521),Pankaj More (Y9402)}
 \begin{document}
 \maketitle
+\section*{Question 1}
+\begin{claim}
+Let $d_i(v)$ denotes the distance from s to v at the end of ith iteration, then 
+$d_j(v) \geq d_i(v) $ for all $j > i$ and v $\in$ V 
+\end{claim}
+\begin{proof}
+	Let the above assertion does not hold for ith iteration for some $i > 0$. So let $d_i(v) < d_{i-1}(v)$ for some
+vertex v. Furthermore, let v be such a vertex with least $d_i(v)$, that is, for each x = v with $d_i(x) < d_i(v)$,
+it must be that $d_i(x) \geq d_{i-1}(x)$. 
+	Since d(v) changes after ith iteration , there must be at least one edge inserted during the ith iteration that now belongs to the shortest path from s to v.
+	Let that edge be (y,x). Before ith iteration , the shortest path to v was from s---x and x---v .
+	After ith iteration , it has become s----y , y-x , x---v. 
+\[d_{i-1}(v) = d_{i-1}(x) + \delta(x,v) \]
+\[d_{i}(v) = d_{i}(x) + \delta(x,v) \]
+
+Since ,
+\[d_i(v) < d_{i-1}(v) \]
+we get,
+\[d_i(x) < d_{i-1}(x) \] 
+(contradiction)
+
+\end{proof}
+\pagebreak
+\begin{claim}
+Let (u, v) be an edge which disappears after some ith iteration, and then reappears after some jth iteration. 
+$d_j(u) > d_{i-1}(u)$ . 
+\end{claim}
+\begin{proof}
+Since (u,v) reappears after jth iteration , it must be the case that (v,u) belonged to the shortest s-t path after (j-1)th iteration. Similarly , since (u,v) disappeared after ith iteration , it must belong to the shortest s-t path after (i-1)th iteration.
+\[d_{j-1}(v) = d_{j-1}(u) - 1 \]
+\[d_{j-1}(v) < d_{j-1}(u) \leq d_j(u) \]
+\[d_{i-1}(u) = d_{i-1}(v) - 1 \]
+\[d_{i-1}(u) < d_{i-1}(v) \leq d_i(v) \]
+
+\[d_j(u) > d_{i-1}(u) \]
+
+ 
+\end{proof}
+
+\begin{claim}
+The modiﬁed FF algorithm has running time $O(m^2n)$.
+\end{claim}
+\begin{proof}
+	Since the shortest s-t path can be computed using BFS in O(m+n) time and each vertex has at least one incident edge , the time complexity of finding shortest path is O(m) . The rest of the iteration is O(m). So total time complexity of each iteration is O(m).
+	Consider an edge (u,v). After it disappears and reappears once , $d(u)$ increases by at least 1. d(u) can vary from 0 to n.    So an edge can disappear only O(n) times.Since there are m edges , total number of disappearance is O(mn).In each iteration of the algorithm , at least 1 edge(the bottleneck edge) disappears.Hence , total number of iterations cannot exceed O(mn). 
+	Therefore, total running time of the algorithm = $O(m^2n)$
+\end{proof}
+\pagebreak
 \section*{Question 2}
 \begin{claim}
 All the edges removed by the attacker will belong to some min-cut.
